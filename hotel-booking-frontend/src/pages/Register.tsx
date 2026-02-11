@@ -32,6 +32,7 @@ export type RegisterFormData = {
   firstName: string;
   lastName: string;
   email: string;
+  role: "user" | "hotel_owner";
   password: string;
   confirmPassword: string;
 };
@@ -53,19 +54,19 @@ const Register = () => {
 
   const mutation = useMutationWithLoading(apiClient.register, {
     onSuccess: async () => {
-      showToast({ 
-        title: "Registration Successful", 
+      showToast({
+        title: "Registration Successful",
         description: "Your account has been created successfully! Welcome to MernHolidays.",
-        type: "SUCCESS" 
+        type: "SUCCESS"
       });
       await queryClient.invalidateQueries("validateToken");
       navigate("/");
     },
     onError: (error: Error) => {
-      showToast({ 
-        title: "Registration Failed", 
+      showToast({
+        title: "Registration Failed",
         description: error.message,
-        type: "ERROR" 
+        type: "ERROR"
       });
     },
     loadingMessage: "Creating your account...",
@@ -216,6 +217,59 @@ const Register = () => {
                     >
                       <Sparkles className="w-4 h-4 mr-1" />
                       {errors.email.message}
+                    </Badge>
+                  </div>
+                )}
+              </div>
+
+              {/* Role Selection */}
+              <div className="space-y-3 p-4 bg-slate-50 rounded-xl border border-slate-200 shadow-inner">
+                <Label className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary-500"></div>
+                  Account Type
+                </Label>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <label
+                    className={`flex-1 flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 ${watch("role") === "user"
+                        ? "border-primary-500 bg-primary-50 ring-2 ring-primary-200"
+                        : "border-slate-200 bg-white hover:border-slate-300"
+                      }`}
+                  >
+                    <input
+                      type="radio"
+                      value="user"
+                      className="w-4 h-4 text-primary-600 focus:ring-primary-500"
+                      {...register("role", { required: "Please select an account type" })}
+                      defaultValue="user"
+                    />
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold text-slate-900">Standard User</span>
+                      <span className="text-xs text-slate-500 font-medium">I want to book stays</span>
+                    </div>
+                  </label>
+                  <label
+                    className={`flex-1 flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 ${watch("role") === "hotel_owner"
+                        ? "border-primary-500 bg-primary-50 ring-2 ring-primary-200"
+                        : "border-slate-200 bg-white hover:border-slate-300"
+                      }`}
+                  >
+                    <input
+                      type="radio"
+                      value="hotel_owner"
+                      className="w-4 h-4 text-primary-600 focus:ring-primary-500"
+                      {...register("role", { required: "Please select an account type" })}
+                    />
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold text-slate-900">Hotel Owner</span>
+                      <span className="text-xs text-slate-500 font-medium">I want to list my property</span>
+                    </div>
+                  </label>
+                </div>
+                {errors.role && (
+                  <div className="flex items-center mt-1">
+                    <Badge variant="outline" className="text-red-500 border-red-200 bg-red-50">
+                      <Sparkles className="w-4 h-4 mr-1" />
+                      {errors.role.message}
                     </Badge>
                   </div>
                 )}

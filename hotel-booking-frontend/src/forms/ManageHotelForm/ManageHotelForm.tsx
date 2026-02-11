@@ -18,7 +18,7 @@ export type HotelFormData = {
   pricePerNight: number;
   starRating: number;
   facilities: string[];
-  imageFiles?: FileList;
+  imageFiles?: File[];
   imageUrls: string[];
   adultCount: number;
   childCount: number;
@@ -53,9 +53,10 @@ type Props = {
   hotel?: HotelType;
   onSave: (hotelFormData: FormData) => void;
   isLoading: boolean;
+  showImages?: boolean;
 };
 
-const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
+const ManageHotelForm = ({ onSave, isLoading, hotel, showImages = true }: Props) => {
   const formMethods = useForm<HotelFormData>();
   const { handleSubmit, reset } = formMethods;
 
@@ -90,16 +91,16 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
     formData.append("city", formDataJson.city);
     formData.append("country", formDataJson.country);
     formData.append("description", formDataJson.description);
-    formDataJson.type.forEach((t, idx) => {
-      formData.append(`type[${idx}]`, t);
+    formDataJson.type.forEach((t) => {
+      formData.append("type", t);
     });
     formData.append("pricePerNight", formDataJson.pricePerNight.toString());
     formData.append("starRating", formDataJson.starRating.toString());
     formData.append("adultCount", formDataJson.adultCount.toString());
     formData.append("childCount", formDataJson.childCount.toString());
 
-    formDataJson.facilities.forEach((facility, index) => {
-      formData.append(`facilities[${index}]`, facility);
+    formDataJson.facilities.forEach((facility) => {
+      formData.append("facilities", facility);
     });
 
     // Add contact information
@@ -134,13 +135,13 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
     }
 
     if (formDataJson.imageUrls) {
-      formDataJson.imageUrls.forEach((url, index) => {
-        formData.append(`imageUrls[${index}]`, url);
+      formDataJson.imageUrls.forEach((url) => {
+        formData.append("imageUrls", url);
       });
     }
 
     if (formDataJson.imageFiles && formDataJson.imageFiles.length > 0) {
-      Array.from(formDataJson.imageFiles).forEach((imageFile) => {
+      formDataJson.imageFiles.forEach((imageFile) => {
         formData.append(`imageFiles`, imageFile);
       });
     }
@@ -150,23 +151,56 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
 
   return (
     <FormProvider {...formMethods}>
-      <form className="flex flex-col gap-10" onSubmit={onSubmit}>
-        <DetailsSection />
-        <TypeSection />
-        <FacilitiesSection />
-        <GuestsSection />
-        <ContactSection />
-        <PoliciesSection />
-        <ImagesSection />
-        <span className="flex justify-end">
-          <button
-            disabled={isLoading}
-            type="submit"
-            className="bg-blue-600 text-white  px-6 py-2 rounded-lg font-semibold hover:bg-blue-500 text-xl disabled:bg-gray-500"
-          >
-            {isLoading ? "Saving..." : "Save"}
-          </button>
-        </span>
+      <form className="max-w-5xl mx-auto space-y-12 pb-20" onSubmit={onSubmit}>
+        <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
+          {/* Header Gradient */}
+          <div className="h-3 bg-gradient-to-r from-primary-500 via-primary-600 to-primary-700"></div>
+
+          <div className="p-8 md:p-12 space-y-16">
+            <DetailsSection />
+            <div className="h-px bg-slate-100 w-full"></div>
+
+            <TypeSection />
+            <div className="h-px bg-slate-100 w-full"></div>
+
+            <FacilitiesSection />
+            <div className="h-px bg-slate-100 w-full"></div>
+
+            <GuestsSection />
+            <div className="h-px bg-slate-100 w-full"></div>
+
+            <ContactSection />
+            <div className="h-px bg-slate-100 w-full"></div>
+
+            <PoliciesSection />
+            {showImages && (
+              <>
+                <div className="h-px bg-slate-100 w-full"></div>
+                <ImagesSection />
+              </>
+            )}
+          </div>
+
+          {/* Form Footer */}
+          <div className="bg-slate-50 px-8 md:px-12 py-8 flex justify-end items-center border-t border-slate-100">
+            <button
+              disabled={isLoading}
+              type="submit"
+              className="bg-primary-600 text-white px-10 py-4 rounded-2xl font-bold hover:bg-primary-700 transition-all duration-300 transform hover:scale-105 active:scale-95 disabled:bg-slate-400 disabled:cursor-not-allowed shadow-lg flex items-center gap-3 text-lg"
+            >
+              {isLoading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  Saving Hotel...
+                </>
+              ) : (
+                <>
+                  {hotel ? "Update Hotel Listing" : "Create Hotel Listing"}
+                </>
+              )}
+            </button>
+          </div>
+        </div>
       </form>
     </FormProvider>
   );

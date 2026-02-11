@@ -76,12 +76,19 @@ router.post(
       }
 
       const token = jwt.sign(
-        { userId: user.id },
+        { userId: user.id, email: user.email, role: user.role },
         process.env.JWT_SECRET_KEY as string,
         {
-          expiresIn: "1d",
+          expiresIn: process.env.JWT_EXPIRES_IN || "1d",
         }
       );
+
+      res.cookie("auth_token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        maxAge: 86400000,
+      });
 
       // Return JWT token in response body for localStorage storage
       res.status(200).json({
@@ -93,11 +100,15 @@ router.post(
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
+          role: user.role,
         },
       });
     } catch (error) {
-      console.log(error);
-      res.status(500).json({ message: "Something went wrong" });
+      console.error("Login error details:", error);
+      res.status(500).json({
+        message: "Something went wrong",
+        error: process.env.NODE_ENV === "development" ? (error as Error).message : undefined
+      });
     }
   }
 );
@@ -126,8 +137,95 @@ router.post(
  *         description: Token is invalid or expired
  */
 router.get("/validate-token", verifyToken, (req: Request, res: Response) => {
-  res.status(200).send({ userId: req.userId });
+  res.status(200).send({ userId: req.userId, role: req.userRole, email: req.userEmail });
 });
+
+/**
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *               - firstName
+ *               - lastName
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               firstName:
+ *                 type: string
+ *               lastName:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: User registered successfully
+ *       400:
+ *         description: User already exists
+ */
+router.post(
+  "/register",
+  [
+    check("firstName", "First Name is required").isString(),
+    check("lastName", "Last Name is required").isString(),
+    check("email", "Email is required").isEmail(),
+    check("password", "Password with 6 or more characters required").isLength({
+      min: 6,
+    }),
+  ],
+  async (req: Request, res: Response) => {
+    console.log("Registration request received:", req.body);
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      console.log("Registration validation errors:", errors.array());
+      return res.status(400).json({ message: errors.array() });
+    }
+
+    try {
+      let user = await User.findOne({
+        email: req.body.email,
+      });
+
+      if (user) {
+        return res.status(400).json({ message: "User already exists" });
+      }
+
+      user = new User(req.body);
+      await user.save();
+
+      const token = jwt.sign(
+        { userId: user.id, email: user.email, role: user.role },
+        process.env.JWT_SECRET_KEY as string,
+        {
+          expiresIn: process.env.JWT_EXPIRES_IN || "1d",
+        }
+      );
+
+      res.cookie("auth_token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        maxAge: 86400000,
+      });
+      return res.status(200).send({ message: "User registered OK", token });
+    } catch (error) {
+      console.error("Registration error details:", error);
+      res.status(500).json({
+        message: "Something went wrong",
+        error: process.env.NODE_ENV === "development" ? (error as Error).message : undefined
+      });
+    }
+  }
+);
 
 /**
  * @swagger
@@ -141,7 +239,7 @@ router.get("/validate-token", verifyToken, (req: Request, res: Response) => {
  *         description: Logout successful
  */
 router.post("/logout", (req: Request, res: Response) => {
-  res.cookie("session_id", "", {
+  res.cookie("auth_token", "", {
     expires: new Date(0),
     maxAge: 0,
     httpOnly: false,

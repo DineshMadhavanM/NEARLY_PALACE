@@ -220,9 +220,10 @@ const SearchBar = () => {
               className="mr-2 text-gray-500 absolute left-3 z-10"
             />
             <Input
-              placeholder="Where are you going?"
+              placeholder="Search by city, country or hotel name..."
               className="pl-10"
               value={destination}
+              data-testid="destination-input"
               onChange={(event) => {
                 setDestination(event.target.value);
                 setHasUserInteracted(true);
@@ -297,6 +298,7 @@ const SearchBar = () => {
                 min={1}
                 max={20}
                 value={adultCount}
+                data-testid="adult-count"
                 onChange={(event) =>
                   setAdultCount(parseInt(event.target.value))
                 }
@@ -323,6 +325,7 @@ const SearchBar = () => {
           <div className="flex flex-col sm:flex-row gap-2 sm:col-span-2 lg:col-span-1">
             <Button
               type="submit"
+              data-testid="search-button"
               className="flex-1 items-center text-white bg-primary-600 px-6 py-2 rounded-md font-semibold hover:bg-primary-500 hover:shadow-medium transition-all duration-200 group"
             >
               Search

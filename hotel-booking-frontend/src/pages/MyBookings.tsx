@@ -14,7 +14,10 @@ import {
   TrendingUp,
   Package,
   DollarSign,
+  MessageSquarePlus,
 } from "lucide-react";
+import LeaveFeedbackModal from "../components/LeaveFeedbackModal";
+import { useState } from "react";
 
 const MyBookings = () => {
   const { data: hotels } = useQueryWithLoading<HotelWithBookingsType[]>(
@@ -24,6 +27,23 @@ const MyBookings = () => {
       loadingMessage: "Loading your bookings...",
     }
   );
+
+  const [selectedBooking, setSelectedBooking] = useState<{
+    hotelId: string;
+    hotelName: string;
+    bookingId: string;
+  } | null>(null);
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+
+  const handleOpenFeedback = (hotelId: string, hotelName: string, bookingId: string) => {
+    setSelectedBooking({ hotelId, hotelName, bookingId });
+    setIsFeedbackModalOpen(true);
+  };
+
+  const handleCloseFeedback = () => {
+    setIsFeedbackModalOpen(false);
+    setSelectedBooking(null);
+  };
 
   if (!hotels || hotels.length === 0) {
     return (
@@ -60,7 +80,7 @@ const MyBookings = () => {
           1,
           Math.ceil(
             (checkOutDate.getTime() - checkInDate.getTime()) /
-              (1000 * 60 * 60 * 24)
+            (1000 * 60 * 60 * 24)
           )
         );
         return hotelTotal + hotel.pricePerNight * nights;
@@ -201,7 +221,7 @@ const MyBookings = () => {
                       1,
                       Math.ceil(
                         (checkOutDate.getTime() - checkInDate.getTime()) /
-                          (1000 * 60 * 60 * 24)
+                        (1000 * 60 * 60 * 24)
                       )
                     );
                     const totalPrice = hotel.pricePerNight * nights;
@@ -231,6 +251,15 @@ const MyBookings = () => {
                             </div>
                           </div>
                           <div className="flex gap-2">
+                            {booking.status === "confirmed" && (
+                              <button
+                                onClick={() => handleOpenFeedback(hotel._id, hotel.name, booking._id)}
+                                className="bg-purple-50 text-purple-600 border border-purple-100 px-3 py-1 rounded-full text-xs font-bold hover:bg-purple-100 transition-colors flex items-center gap-1"
+                              >
+                                <MessageSquarePlus className="w-3 h-3" />
+                                Feedback
+                              </button>
+                            )}
                             <Badge
                               className={`${getStatusColor(
                                 booking.status || "pending"
@@ -352,31 +381,31 @@ const MyBookings = () => {
                         {/* Special Requests & Cancellation */}
                         {(booking.specialRequests ||
                           booking.cancellationReason) && (
-                          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {booking.specialRequests && (
-                              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <h4 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
-                                  <Package className="w-4 h-4" />
-                                  Special Requests
-                                </h4>
-                                <p className="text-blue-700 text-sm">
-                                  {booking.specialRequests}
-                                </p>
-                              </div>
-                            )}
-                            {booking.cancellationReason && (
-                              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                                <h4 className="font-semibold text-red-800 mb-2 flex items-center gap-2">
-                                  <Building className="w-4 h-4" />
-                                  Cancellation Reason
-                                </h4>
-                                <p className="text-red-700 text-sm">
-                                  {booking.cancellationReason}
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        )}
+                            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                              {booking.specialRequests && (
+                                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                  <h4 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
+                                    <Package className="w-4 h-4" />
+                                    Special Requests
+                                  </h4>
+                                  <p className="text-blue-700 text-sm">
+                                    {booking.specialRequests}
+                                  </p>
+                                </div>
+                              )}
+                              {booking.cancellationReason && (
+                                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                                  <h4 className="font-semibold text-red-800 mb-2 flex items-center gap-2">
+                                    <Building className="w-4 h-4" />
+                                    Cancellation Reason
+                                  </h4>
+                                  <p className="text-red-700 text-sm">
+                                    {booking.cancellationReason}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          )}
                       </div>
                     );
                   })}
@@ -386,6 +415,17 @@ const MyBookings = () => {
           ))}
         </div>
       </div>
+
+      {/* Leave Feedback Modal */}
+      {selectedBooking && (
+        <LeaveFeedbackModal
+          isOpen={isFeedbackModalOpen}
+          onClose={handleCloseFeedback}
+          hotelId={selectedBooking.hotelId}
+          hotelName={selectedBooking.hotelName}
+          bookingId={selectedBooking.bookingId}
+        />
+      )}
     </div>
   );
 };

@@ -38,7 +38,10 @@ const SearchResultsCard = ({ hotel }: Props) => {
   };
 
   return (
-    <div className="group bg-white rounded-2xl shadow-soft hover:shadow-large transition-all duration-300 border border-gray-100 overflow-hidden h-auto xl:h-[500px] flex">
+    <div
+      data-testid="hotel-card"
+      className="group bg-white rounded-2xl shadow-soft hover:shadow-large transition-all duration-300 border border-gray-100 overflow-hidden h-auto xl:h-[500px] flex"
+    >
       <div className="grid grid-cols-1 xl:grid-cols-[2fr_3fr] gap-0 w-full h-full">
         {/* Image Section */}
         <div className="relative overflow-hidden h-64 xl:h-[500px]">

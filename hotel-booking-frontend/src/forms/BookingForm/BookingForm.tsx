@@ -62,12 +62,28 @@ const BookingForm = ({ currentUser, paymentIntent }: Props) => {
   const { mutate: bookRoom, isLoading } = useMutation(
     apiClient.createRoomBooking,
     {
-      onSuccess: () => {
+      onSuccess: async (_data, variables) => {
         showToast({
           title: "Booking Successful",
           description: "Your hotel booking has been confirmed successfully!",
           type: "SUCCESS",
         });
+
+        // Send notification to hotel owner
+        try {
+          const hotel = await apiClient.fetchHotelById(hotelId as string);
+          await apiClient.sendBookingNotification({
+            hotelOwnerId: hotel.userId,
+            hotelName: hotel.name,
+            guestName: `${variables.firstName} ${variables.lastName}`,
+            guestEmail: variables.email,
+            checkIn: new Date(variables.checkIn).toLocaleDateString(),
+            checkOut: new Date(variables.checkOut).toLocaleDateString(),
+            totalCost: variables.totalCost,
+          });
+        } catch (error) {
+          console.error("Failed to send notification to hotel owner:", error);
+        }
 
         // Navigate to My Bookings page after a short delay
         setTimeout(() => {

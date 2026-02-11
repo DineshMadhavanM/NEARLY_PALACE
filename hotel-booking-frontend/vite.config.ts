@@ -1,8 +1,17 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
+import basicSsl from "@vitejs/plugin-basic-ssl";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
-  // Removed proxy since we're making direct requests to backend
+  plugins: [react(), basicSsl()],
+  server: {
+    proxy: {
+      "/api": {
+        target: "http://localhost:7002",
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 });

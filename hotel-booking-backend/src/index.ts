@@ -13,6 +13,10 @@ import bookingRoutes from "./routes/my-bookings";
 import bookingsManagementRoutes from "./routes/bookings";
 import healthRoutes from "./routes/health";
 import businessInsightsRoutes from "./routes/business-insights";
+import analyticsRoutes from "./routes/analytics";
+import reviewRoutes from "./routes/reviews";
+import adminRoutes from "./routes/admin";
+import messageRoutes from "./routes/messages";
 import swaggerUi from "swagger-ui-express";
 import { specs } from "./swagger";
 import helmet from "helmet";
@@ -117,7 +121,11 @@ app.use(morgan("combined"));
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   "http://localhost:5174",
+  "https://localhost:5174",
   "http://localhost:5173",
+  "https://localhost:5173",
+  "http://localhost:5176",
+  "https://localhost:5176",
   "https://mern-booking-hotel.netlify.app",
   "https://mern-booking-hotel.netlify.app/",
 ].filter((origin): origin is string => Boolean(origin));
@@ -206,6 +214,19 @@ app.use("/api/my-bookings", bookingRoutes);
 app.use("/api/bookings", bookingsManagementRoutes);
 app.use("/api/health", healthRoutes);
 app.use("/api/business-insights", businessInsightsRoutes);
+app.use("/api/analytics", analyticsRoutes);
+app.use("/api/reviews", reviewRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/messages", messageRoutes);
+
+// Global Error Handler
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error("❌ Global Error Handler caught:", err);
+  res.status(err.status || 500).json({
+    message: err.message || "Something went wrong",
+    error: process.env.NODE_ENV === "development" ? err : {}
+  });
+});
 
 // Swagger API Documentation
 app.use(
@@ -227,6 +248,14 @@ const server = app.listen(PORT, () => {
   console.log(`📚 API Docs: http://localhost:${PORT}/api-docs`);
   console.log(`💚 Health Check: http://localhost:${PORT}/api/health`);
   console.log("🚀 ============================================");
+});
+
+server.on("error", (error: any) => {
+  console.error("❌ Server error on startup:", error);
+  if (error.code === "EADDRINUSE") {
+    console.error(`💡 Port ${PORT} is already in use. Please kill the process using it.`);
+  }
+  process.exit(1);
 });
 
 // Graceful Shutdown Handler

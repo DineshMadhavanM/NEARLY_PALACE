@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import multer from "multer";
 import cloudinary from "cloudinary";
 import Hotel from "../models/hotel";
-import verifyToken from "../middleware/auth";
+import verifyToken, { requireRole } from "../middleware/auth";
 import { body } from "express-validator";
 import { HotelType } from "../../../shared/types";
 
@@ -19,6 +19,7 @@ const upload = multer({
 router.post(
   "/",
   verifyToken,
+  requireRole(["hotel_owner", "admin"]),
   [
     body("name").notEmpty().withMessage("Name is required"),
     body("city").notEmpty().withMessage("City is required"),
@@ -36,12 +37,30 @@ router.post(
       .notEmpty()
       .isArray()
       .withMessage("Facilities are required"),
+    body("adultCount")
+      .notEmpty()
+      .isNumeric()
+      .withMessage("Adult count is required and must be a number"),
+    body("childCount")
+      .notEmpty()
+      .isNumeric()
+      .withMessage("Child count is required and must be a number"),
+    body("starRating")
+      .notEmpty()
+      .isNumeric()
+      .isInt({ min: 1, max: 5 })
+      .withMessage("Star rating is required and must be between 1 and 5"),
   ],
   upload.array("imageFiles", 6),
   async (req: Request, res: Response) => {
     try {
       const imageFiles = (req as any).files as any[];
       const newHotel: HotelType = req.body;
+
+      console.log("POST /api/my-hotels - Request Received");
+      console.log("Body:", JSON.stringify(req.body, null, 2));
+      console.log("Files received:", imageFiles?.length || 0);
+
 
       // Ensure type is always an array
       if (typeof newHotel.type === "string") {
@@ -74,8 +93,8 @@ router.post(
 
       res.status(201).send(hotel);
     } catch (e) {
-      console.log(e);
-      res.status(500).json({ message: "Something went wrong" });
+      console.error("FATAL ERROR in POST /api/my-hotels:", e);
+      res.status(500).json({ message: "Internal Server Error during hotel creation" });
     }
   }
 );
@@ -108,9 +127,10 @@ router.put(
   upload.array("imageFiles"),
   async (req: Request, res: Response) => {
     try {
-      console.log("Request body:", req.body);
+      console.log("PUT /api/my-hotels/:hotelId - Update Request Received");
       console.log("Hotel ID:", req.params.hotelId);
-      console.log("User ID:", req.userId);
+      console.log("Body Keys:", Object.keys(req.body));
+      console.log("Files received Count:", (req as any).files?.length || 0);
 
       // First, find the existing hotel
       const existingHotel = await Hotel.findOne({
@@ -119,8 +139,10 @@ router.put(
       });
 
       if (!existingHotel) {
+        console.warn("Hotel not found for update:", req.params.hotelId);
         return res.status(404).json({ message: "Hotel not found" });
       }
+
 
       // Prepare update data
       const updateData: any = {
@@ -155,6 +177,19 @@ router.put(
         smokingPolicy: req.body["policies.smokingPolicy"] || "",
       };
 
+      // Handle image updates
+      const imageFilesToUpload = (req as any).files as any[];
+      const updatedImageUrls = await uploadImages(imageFilesToUpload || []); // Handle new uploads (if any)
+
+      // combine new uploads with existing images retained by the user
+      const existingImageUrls = req.body.imageUrls
+        ? Array.isArray(req.body.imageUrls)
+          ? req.body.imageUrls
+          : [req.body.imageUrls]
+        : [];
+
+      updateData.imageUrls = [...updatedImageUrls, ...existingImageUrls];
+
       console.log("Update data:", updateData);
 
       // Update the hotel
@@ -163,25 +198,6 @@ router.put(
         updateData,
         { new: true }
       );
-
-      if (!updatedHotel) {
-        return res.status(404).json({ message: "Hotel not found" });
-      }
-
-      // Handle image uploads if any
-      const files = (req as any).files as any[];
-      if (files && files.length > 0) {
-        const updatedImageUrls = await uploadImages(files);
-        updatedHotel.imageUrls = [
-          ...updatedImageUrls,
-          ...(req.body.imageUrls
-            ? Array.isArray(req.body.imageUrls)
-              ? req.body.imageUrls
-              : [req.body.imageUrls]
-            : []),
-        ];
-        await updatedHotel.save();
-      }
 
       res.status(200).json(updatedHotel);
     } catch (error) {
@@ -198,21 +214,26 @@ router.put(
 );
 
 async function uploadImages(imageFiles: any[]) {
-  const uploadPromises = imageFiles.map(async (image) => {
-    const b64 = Buffer.from(image.buffer as Uint8Array).toString("base64");
-    let dataURI = "data:" + image.mimetype + ";base64," + b64;
-    const res = await cloudinary.v2.uploader.upload(dataURI, {
-      secure: true, // Force HTTPS URLs
-      transformation: [
-        { width: 800, height: 600, crop: "fill" },
-        { quality: "auto" },
-      ],
+  try {
+    const uploadPromises = imageFiles.map(async (image) => {
+      const b64 = Buffer.from(image.buffer as Uint8Array).toString("base64");
+      let dataURI = "data:" + image.mimetype + ";base64," + b64;
+      const res = await cloudinary.v2.uploader.upload(dataURI, {
+        secure: true, // Force HTTPS URLs
+        transformation: [
+          { width: 800, height: 600, crop: "fill" },
+          { quality: "auto" },
+        ],
+      });
+      return res.secure_url;
     });
-    return res.url;
-  });
 
-  const imageUrls = await Promise.all(uploadPromises);
-  return imageUrls;
+    const imageUrls = await Promise.all(uploadPromises);
+    return imageUrls;
+  } catch (error) {
+    console.error("Error in uploadImages:", error);
+    throw error;
+  }
 }
 
 export default router;

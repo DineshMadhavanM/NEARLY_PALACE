@@ -5,7 +5,7 @@ import * as apiClient from "../api-client";
 import { loadStripe, Stripe } from "@stripe/stripe-js";
 import { useToast } from "../hooks/use-toast";
 
-const STRIPE_PUB_KEY = import.meta.env.VITE_STRIPE_PUB_KEY || "";
+const STRIPE_PUB_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "";
 
 type ToastMessage = {
   title: string;
@@ -16,6 +16,9 @@ type ToastMessage = {
 export type AppContext = {
   showToast: (toastMessage: ToastMessage) => void;
   isLoggedIn: boolean;
+  userId?: string;
+  userRole?: string;
+  userEmail?: string;
   stripePromise: Promise<Stripe | null>;
   showGlobalLoading: (message?: string) => void;
   hideGlobalLoading: () => void;
@@ -42,8 +45,8 @@ export const AppContextProvider = ({
 
   // Simple check for stored tokens without API calls
   const checkStoredAuth = () => {
-    const localToken = localStorage.getItem("session_id");
-    const userId = localStorage.getItem("user_id");
+    const localToken = sessionStorage.getItem("session_id") || localStorage.getItem("session_id");
+    const userId = sessionStorage.getItem("user_id") || localStorage.getItem("user_id");
 
     // Check if we have both token and user ID
     const hasToken = !!localToken;
@@ -68,9 +71,9 @@ export const AppContextProvider = ({
       enabled: true,
       // Add fallback for JWT authentication
       onError: (error: any) => {
-        // If validateToken fails, check if we have a token in localStorage
-        const storedToken = localStorage.getItem("session_id");
-        const storedUserId = localStorage.getItem("user_id");
+        // If validateToken fails, check if we have a token in storage
+        const storedToken = sessionStorage.getItem("session_id") || localStorage.getItem("session_id");
+        const storedUserId = sessionStorage.getItem("user_id") || localStorage.getItem("user_id");
 
         if (storedToken && error.response?.status === 401) {
           console.log(
@@ -79,7 +82,7 @@ export const AppContextProvider = ({
 
           // If we also have a user ID, we can be more confident it's a valid session
           if (storedUserId) {
-            console.log("JWT session confirmed - using localStorage fallback");
+            console.log("JWT session confirmed - using storage fallback");
           }
         }
       },
@@ -92,7 +95,7 @@ export const AppContextProvider = ({
     isError,
     hasData: !!data,
     hasStoredToken: checkStoredAuth(),
-    hasUserId: !!localStorage.getItem("user_id"),
+    hasUserId: !!(sessionStorage.getItem("user_id") || localStorage.getItem("user_id")),
     data,
   });
 
@@ -107,12 +110,12 @@ export const AppContextProvider = ({
   const isJWTFallback = () => {
     // Check if we have a token but validation failed (typical JWT fallback behavior)
     const hasStoredToken = checkStoredAuth();
-    const hasUserId = !!localStorage.getItem("user_id");
+    const hasUserId = !!(sessionStorage.getItem("user_id") || localStorage.getItem("user_id"));
     const isFallback = hasStoredToken && isError && !data && hasUserId;
 
     if (isFallback) {
       console.log(
-        "JWT fallback mode detected - using localStorage authentication"
+        "JWT fallback mode detected - using storage authentication"
       );
     }
 
@@ -133,8 +136,8 @@ export const AppContextProvider = ({
       toastMessage.type === "SUCCESS"
         ? "success"
         : toastMessage.type === "ERROR"
-        ? "destructive"
-        : "info";
+          ? "destructive"
+          : "info";
 
     toast({
       variant,
@@ -159,6 +162,9 @@ export const AppContextProvider = ({
       value={{
         showToast,
         isLoggedIn: finalIsLoggedIn,
+        userId: data?.userId, // Add userId to context
+        userRole: data?.role,
+        userEmail: data?.email,
         stripePromise,
         showGlobalLoading,
         hideGlobalLoading,

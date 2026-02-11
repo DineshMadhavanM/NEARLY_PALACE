@@ -3,7 +3,7 @@ import Cookies from "js-cookie";
 
 // Define base URL based on environment
 const getBaseURL = () => {
-  if (import.meta.env.VITE_API_BASE_URL) {
+  if (import.meta.env.VITE_API_BASE_URL && import.meta.env.VITE_API_BASE_URL !== "") {
     return import.meta.env.VITE_API_BASE_URL;
   }
 
@@ -12,8 +12,9 @@ const getBaseURL = () => {
     return "https://mern-hotel-booking-68ej.onrender.com";
   }
 
+  // For localhost, use relative path to leverage Vite Proxy
   if (window.location.hostname === "localhost") {
-    return "http://localhost:7002";
+    return "";
   }
 
   // Default to production
@@ -37,12 +38,12 @@ const axiosInstance = axios.create({
 
 // Request interceptor to add Authorization header with JWT token
 axiosInstance.interceptors.request.use((config: CustomAxiosRequestConfig) => {
-  // Get JWT token from localStorage (no more cookie dependency)
-  const token = localStorage.getItem("session_id");
+  // Get JWT token from sessionStorage or localStorage (sessionStorage preferred)
+  const token = sessionStorage.getItem("session_id") || localStorage.getItem("session_id");
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
-    console.log("Using JWT token from localStorage for authentication");
+    console.log("Using JWT token for authentication");
   }
 
   // Add retry count to track retries
@@ -61,6 +62,7 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401) {
       Cookies.remove("session_id");
       localStorage.removeItem("session_id");
+      sessionStorage.removeItem("session_id");
       // Don't redirect automatically - let components handle it
     }
 

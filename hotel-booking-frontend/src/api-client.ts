@@ -8,6 +8,8 @@ import {
   UserType,
   HotelWithBookingsType,
   BookingType,
+  ReviewType,
+  MessageType,
 } from "../../shared/types";
 import { BookingFormData } from "./forms/BookingForm/BookingForm";
 import { queryClient } from "./main";
@@ -17,25 +19,43 @@ export const fetchCurrentUser = async (): Promise<UserType> => {
   return response.data;
 };
 
+export const updateCurrentUser = async (userData: Partial<UserType>): Promise<UserType> => {
+  const response = await axiosInstance.put("/api/users/me", userData);
+  return response.data;
+};
+
 export const register = async (formData: RegisterFormData) => {
-  const response = await axiosInstance.post("/api/users/register", formData);
+  const response = await axiosInstance.post("/api/auth/register", formData);
+
+  // Store JWT token from response body in sessionStorage
+  const token = response.data?.token;
+  if (token) {
+    sessionStorage.setItem("session_id", token);
+    console.log("JWT token stored in sessionStorage after registration");
+  }
+
+  // Store user info for incognito mode fallback
+  if (response.data?.userId) {
+    sessionStorage.setItem("user_id", response.data.userId);
+  }
+
   return response.data;
 };
 
 export const signIn = async (formData: SignInFormData) => {
   const response = await axiosInstance.post("/api/auth/login", formData);
 
-  // Store JWT token from response body in localStorage
+  // Store JWT token from response body in sessionStorage
   const token = response.data?.token;
   if (token) {
-    localStorage.setItem("session_id", token);
-    console.log("JWT token stored in localStorage for incognito compatibility");
+    sessionStorage.setItem("session_id", token);
+    console.log("JWT token stored in sessionStorage for session-only persistence");
   }
 
   // Store user info for incognito mode fallback
   if (response.data?.userId) {
-    localStorage.setItem("user_id", response.data.userId);
-    console.log("User ID stored for incognito mode fallback");
+    sessionStorage.setItem("user_id", response.data.userId);
+    console.log("User ID stored in sessionStorage for fallback");
   }
 
   // Force validate token after successful login to update React Query cache
@@ -52,7 +72,7 @@ export const signIn = async (formData: SignInFormData) => {
     console.log("Token validation failed after login, but continuing...");
 
     // Even if validation fails, if we have a token stored, consider it a success for incognito mode
-    if (localStorage.getItem("session_id")) {
+    if (sessionStorage.getItem("session_id")) {
       console.log("Incognito mode detected - using stored token as fallback");
     }
   }
@@ -77,9 +97,11 @@ export const validateToken = async () => {
 export const signOut = async () => {
   const response = await axiosInstance.post("/api/auth/logout");
 
-  // Clear localStorage (JWT tokens)
+  // Clear storage (JWT tokens)
   localStorage.removeItem("session_id");
   localStorage.removeItem("user_id");
+  sessionStorage.removeItem("session_id");
+  sessionStorage.removeItem("user_id");
 
   return response.data;
 };
@@ -170,13 +192,13 @@ export const searchHotels = async (
   searchParams.types?.forEach((type) => queryParams.append("types", type));
   searchParams.stars?.forEach((star) => queryParams.append("stars", star));
 
-  const response = await axiosInstance.get(`/api/hotels/search?${queryParams}`);
+  const response = await axiosInstance.get(`/api/hotels?${queryParams}`);
   return response.data;
 };
 
 export const fetchHotels = async (): Promise<HotelType[]> => {
   const response = await axiosInstance.get("/api/hotels");
-  return response.data;
+  return response.data.data;
 };
 
 export const fetchHotelById = async (hotelId: string): Promise<HotelType> => {
@@ -230,5 +252,86 @@ export const fetchBusinessInsightsPerformance = async () => {
   const response = await axiosInstance.get(
     "/api/business-insights/performance"
   );
+  return response.data;
+};
+
+// Review API functions
+export const fetchHotelReviews = async (hotelId: string): Promise<ReviewType[]> => {
+  const response = await axiosInstance.get(`/api/reviews/hotel/${hotelId}`);
+  return response.data;
+};
+
+export const createReview = async (reviewFormData: any) => {
+  const response = await axiosInstance.post("/api/reviews", reviewFormData);
+  return response.data;
+};
+
+export const fetchAdminUsers = async (): Promise<UserType[]> => {
+  const response = await axiosInstance.get("/api/admin/users");
+  return response.data;
+};
+
+export const fetchAdminStats = async () => {
+  const response = await axiosInstance.get("/api/admin/stats");
+  return response.data;
+};
+
+export const fetchAdminHotels = async (): Promise<HotelType[]> => {
+  const response = await axiosInstance.get("/api/admin/hotels");
+  return response.data;
+};
+
+export const deleteAdminUser = async (userId: string) => {
+  const response = await axiosInstance.delete(`/api/admin/users/${userId}`);
+  return response.data;
+};
+
+export const updateAdminUserRole = async (userId: string, role: string) => {
+  const response = await axiosInstance.patch(`/api/admin/users/${userId}/role`, { role });
+  return response.data;
+};
+
+export const deleteAdminHotel = async (hotelId: string) => {
+  const response = await axiosInstance.delete(`/api/admin/hotels/${hotelId}`);
+  return response.data;
+};
+
+export const fetchInbox = async (): Promise<MessageType[]> => {
+  const response = await axiosInstance.get("/api/messages/inbox");
+  return response.data;
+};
+
+export const fetchUnreadCount = async (): Promise<{ count: number }> => {
+  const response = await axiosInstance.get("/api/messages/unread-count");
+  return response.data;
+};
+
+export const sendMessage = async (messageData: { receiverEmail: string; subject: string; content: string }) => {
+  const response = await axiosInstance.post("/api/messages/send", messageData);
+  return response.data;
+};
+
+export const markAsRead = async (messageId: string) => {
+  const response = await axiosInstance.patch(`/api/messages/${messageId}/read`);
+  return response.data;
+};
+
+export const deleteMessage = async (messageId: string) => {
+  const response = await axiosInstance.delete(`/api/messages/${messageId}`);
+  return response.data;
+};
+
+export const sendBookingNotification = async (notificationData: {
+  hotelOwnerId: string;
+  hotelName: string;
+  guestName: string;
+  guestEmail: string;
+  checkIn: string;
+  checkOut: string;
+  totalCost: number;
+  phone?: string;
+  specialRequests?: string;
+}) => {
+  const response = await axiosInstance.post("/api/messages/send-booking-notification", notificationData);
   return response.data;
 };

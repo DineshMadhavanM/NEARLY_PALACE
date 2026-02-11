@@ -21,53 +21,45 @@ router.get("/me", verifyToken, async (req: Request, res: Response) => {
   }
 });
 
-router.post(
-  "/register",
+
+router.put(
+  "/me",
+  verifyToken,
   [
     check("firstName", "First Name is required").isString(),
     check("lastName", "Last Name is required").isString(),
-    check("email", "Email is required").isEmail(),
-    check("password", "Password with 6 or more characters required").isLength({
-      min: 6,
-    }),
+    check("phone", "Phone is required").optional().isString(),
+    check("address", "Address is required").optional().isObject(),
   ],
   async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ message: errors.array() });
+      return res.status(400).json({ errors: errors.array() });
     }
 
     try {
-      let user = await User.findOne({
-        email: req.body.email,
-      });
+      const user = await User.findByIdAndUpdate(
+        req.userId,
+        {
+          $set: {
+            firstName: req.body.firstName,
+            lastName: req.body.lastName,
+            phone: req.body.phone,
+            address: req.body.address,
+            preferences: req.body.preferences,
+          },
+        },
+        { new: true }
+      ).select("-password");
 
-      if (user) {
-        return res.status(400).json({ message: "User already exists" });
+      if (!user) {
+        return res.status(400).json({ message: "User not found" });
       }
 
-      user = new User(req.body);
-      await user.save();
-
-      const token = jwt.sign(
-        { userId: user.id },
-        process.env.JWT_SECRET_KEY as string,
-        {
-          expiresIn: "1d",
-        }
-      );
-
-      res.cookie("auth_token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        maxAge: 86400000,
-        path: "/",
-      });
-      return res.status(200).send({ message: "User registered OK" });
+      res.json(user);
     } catch (error) {
       console.log(error);
-      res.status(500).send({ message: "Something went wrong" });
+      res.status(500).json({ message: "Something went wrong" });
     }
   }
 );

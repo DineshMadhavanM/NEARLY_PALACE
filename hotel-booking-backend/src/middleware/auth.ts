@@ -5,33 +5,42 @@ declare global {
   namespace Express {
     interface Request {
       userId: string;
+      userRole: string;
+      userEmail: string;
     }
   }
 }
 
 const verifyToken = (req: Request, res: Response, next: NextFunction) => {
-  // Check for token in Authorization header first (for axios interceptor)
-  const authHeader = req.headers.authorization;
-  let token: string | undefined;
+  const cookieToken = req.cookies?.auth_token;
+  const headerToken = req.headers.authorization?.startsWith("Bearer ")
+    ? req.headers.authorization.split(" ")[1]
+    : null;
 
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    token = authHeader.substring(7);
-  } else {
-    // Fallback to session cookie
-    token = req.cookies["session_id"];
-  }
+  const token = cookieToken || headerToken;
 
   if (!token) {
-    return res.status(401).json({ message: "unauthorized" });
+    return res.status(401).json({ message: "Access denied" });
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY as string);
     req.userId = (decoded as JwtPayload).userId;
+    req.userRole = (decoded as JwtPayload).role;
+    req.userEmail = (decoded as JwtPayload).email;
     next();
   } catch (error) {
-    return res.status(401).json({ message: "unauthorized" });
+    return res.status(401).json({ message: "Invalid token" });
   }
+};
+
+export const requireRole = (roles: string[]) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!roles.includes(req.userRole)) {
+      return res.status(403).json({ message: "Insufficient permissions" });
+    }
+    next();
+  };
 };
 
 export default verifyToken;

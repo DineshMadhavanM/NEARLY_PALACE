@@ -22,9 +22,11 @@ import Home from "./pages/Home";
 import ApiDocs from "./pages/ApiDocs";
 import ApiStatus from "./pages/ApiStatus";
 import AnalyticsDashboard from "./pages/AnalyticsDashboard";
+import Profile from "./pages/Profile";
+import Admin from "./pages/Admin";
 
 const App = () => {
-  const { isLoggedIn } = useAppContext();
+  const { isLoggedIn, userEmail } = useAppContext();
   return (
     <Router>
       <ScrollToTop />
@@ -137,6 +139,24 @@ const App = () => {
                 </Layout>
               }
             />
+            <Route
+              path="/profile"
+              element={
+                <Layout>
+                  <Profile />
+                </Layout>
+              }
+            />
+            {userEmail === "kit27.ad17@gmail.com" && (
+              <Route
+                path="/admin"
+                element={
+                  <Layout>
+                    <Admin />
+                  </Layout>
+                }
+              />
+            )}
           </>
         )}
         <Route path="*" element={<Navigate to="/" />} />

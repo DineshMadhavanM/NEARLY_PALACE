@@ -9,12 +9,29 @@ import {
   Building2,
   Calendar,
   LogIn,
+  UserCircle,
+  ShieldAlert,
+  Mail,
 } from "lucide-react";
+import { useState } from "react";
+import { useQuery } from "react-query";
+import * as apiClient from "../api-client";
+import MessagesModal from "./MessagesModal";
 
 const Header = () => {
-  const { isLoggedIn } = useAppContext();
+  const { isLoggedIn, userRole, userEmail } = useAppContext();
   const search = useSearchContext();
   const navigate = useNavigate();
+  const [isMessagesOpen, setIsMessagesOpen] = useState(false);
+
+  const { data: unreadCount } = useQuery(
+    "fetchUnreadCount",
+    apiClient.fetchUnreadCount,
+    {
+      enabled: isLoggedIn,
+      refetchInterval: 30000, // Refetch every 30 seconds
+    }
+  );
 
   const handleLogoClick = () => {
     // Clear search context when going to home page
@@ -30,19 +47,19 @@ const Header = () => {
           🚧 Development Mode - Auth state persists between sessions
         </div>
       )} */}
-      <header className="bg-gradient-to-r from-primary-600 to-primary-700 shadow-large sticky top-0 z-50">
+      <header className="bg-gradient-to-r from-violet-900 via-violet-800 to-fuchsia-900 shadow-luxury sticky top-0 z-50">
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             {/* Logo */}
             <button
               onClick={handleLogoClick}
-              className="flex items-center space-x-2 group"
+              className="flex items-center space-x-3 group"
             >
-              <div className="bg-white p-2 rounded-lg shadow-soft group-hover:shadow-medium transition-all duration-300">
-                <Building2 className="w-6 h-6 text-primary-600" />
+              <div className="bg-gradient-to-br from-violet-400 to-fuchsia-500 p-2.5 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                <Building2 className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-bold text-white tracking-tight group-hover:text-primary-100 transition-colors">
-                MernHolidays
+              <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-200 via-fuchsia-100 to-violet-200 tracking-tight group-hover:from-violet-100 group-hover:via-white group-hover:to-violet-100 transition-all duration-300">
+                Nearly Palace
               </span>
             </button>
 
@@ -50,47 +67,90 @@ const Header = () => {
             <nav className="hidden md:flex items-center space-x-1">
               {isLoggedIn ? (
                 <>
-                  {/* Analytics Dashboard Link */}
-                  <Link
-                    className="flex items-center text-white/90 hover:text-white px-4 py-2 rounded-lg font-medium hover:bg-white/10 transition-all duration-200 group"
-                    to="/analytics"
-                  >
-                    <BarChart3 className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-                    Analytics
-                  </Link>
+                  {/* Analytics Dashboard Link - Only for owners and admins */}
+                  {(userRole === "hotel_owner" || userRole === "admin") && (
+                    <Link
+                      className="flex items-center text-white/90 hover:text-white px-4 py-2 rounded-lg font-medium hover:bg-white/10 transition-all duration-200 group"
+                      to="/analytics"
+                    >
+                      <BarChart3 className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+                      Analytics
+                    </Link>
+                  )}
 
                   {/* <div className="w-px h-6 bg-white/20 mx-2"></div> */}
-                  <Link
-                    className="flex items-center text-white/90 hover:text-white px-4 py-2 rounded-lg font-medium hover:bg-white/10 transition-all duration-200 group"
-                    to="/my-bookings"
-                  >
-                    <Calendar className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-                    My Bookings
-                  </Link>
-                  <Link
-                    className="flex items-center text-white/90 hover:text-white px-4 py-2 rounded-lg font-medium hover:bg-white/10 transition-all duration-200 group"
-                    to="/my-hotels"
-                  >
-                    <Building2 className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-                    My Hotels
-                  </Link>
+                  {/* My Bookings Link - For normal users and admins, but not hotel owners */}
+                  {(userRole === "user" || userRole === "admin") && (
+                    <Link
+                      className="flex items-center text-white/90 hover:text-white px-4 py-2 rounded-lg font-medium hover:bg-white/10 transition-all duration-200 group"
+                      to="/my-bookings"
+                    >
+                      <Calendar className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+                      My Bookings
+                    </Link>
+                  )}
 
-                  {/* API Documentation Link */}
-                  <Link
-                    className="flex items-center text-white/90 hover:text-white px-4 py-2 rounded-lg font-medium hover:bg-white/10 transition-all duration-200 group"
-                    to="/api-docs"
-                  >
-                    <FileText className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-                    API Docs
-                  </Link>
+                  {/* My Hotels Link - Only for owners and admins */}
+                  {(userRole === "hotel_owner" || userRole === "admin") && (
+                    <Link
+                      className="flex items-center text-white/90 hover:text-white px-4 py-2 rounded-lg font-medium hover:bg-white/10 transition-all duration-200 group"
+                      to="/my-hotels"
+                    >
+                      <Building2 className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+                      My Hotels
+                    </Link>
+                  )}
 
-                  {/* API Status Link */}
-                  <Link
-                    className="flex items-center text-white/90 hover:text-white px-4 py-2 rounded-lg font-medium hover:bg-white/10 transition-all duration-200 group"
-                    to="/api-status"
+                  {/* API Documentation Link - Only for specific admin */}
+                  {userEmail === "kit27.ad17@gmail.com" && (
+                    <>
+                      <Link
+                        className="flex items-center text-white/90 hover:text-white px-4 py-2 rounded-lg font-medium hover:bg-white/10 transition-all duration-200 group"
+                        to="/api-docs"
+                      >
+                        <FileText className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+                        API Docs
+                      </Link>
+
+                      {/* API Status Link */}
+                      <Link
+                        className="flex items-center text-white/90 hover:text-white px-4 py-2 rounded-lg font-medium hover:bg-white/10 transition-all duration-200 group"
+                        to="/api-status"
+                      >
+                        <Activity className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+                        API Status
+                      </Link>
+
+                      {/* Admin Link */}
+                      <Link
+                        className="flex items-center text-white/90 hover:text-white px-4 py-2 rounded-lg font-medium hover:bg-white/10 transition-all duration-200 group"
+                        to="/admin"
+                      >
+                        <ShieldAlert className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+                        Admin
+                      </Link>
+                    </>
+                  )}
+
+                  <button
+                    onClick={() => setIsMessagesOpen(true)}
+                    className="relative flex items-center text-white/90 hover:text-white px-4 py-2 rounded-lg font-medium hover:bg-white/10 transition-all duration-200 group"
                   >
-                    <Activity className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-                    API Status
+                    <Mail className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+                    Messages
+                    {unreadCount && unreadCount.count > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
+                        {unreadCount.count}
+                      </span>
+                    )}
+                  </button>
+
+                  <Link
+                    to="/profile"
+                    className="flex items-center text-white/90 hover:text-white px-4 py-2 rounded-lg font-medium hover:bg-white/10 transition-all duration-200 group"
+                  >
+                    <UserCircle className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+                    Profile
                   </Link>
 
                   <SignOutButton />
@@ -127,6 +187,9 @@ const Header = () => {
           </div>
         </div>
       </header>
+
+      {/* Messages Modal */}
+      <MessagesModal isOpen={isMessagesOpen} onClose={() => setIsMessagesOpen(false)} />
     </>
   );
 };
