@@ -1,0 +1,10 @@
+# Render ignore file
+node_modules
+.env
+.env.local
+.env.e2e
+*.log
+.git
+.vscode
+e2e-tests
+data

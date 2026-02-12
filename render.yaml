@@ -1,0 +1,53 @@
+services:
+  # Backend API Service
+  - type: web
+    name: hotel-booking-backend
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: cd hotel-booking-backend && npm install && npm run build
+    startCommand: cd hotel-booking-backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 7002
+      - key: MONGODB_CONNECTION_STRING
+        sync: false
+      - key: JWT_SECRET_KEY
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: STRIPE_API_KEY
+        sync: false
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: FRONTEND_URL
+        value: https://hotel-booking-frontend.onrender.com
+    healthCheckPath: /api/health
+
+  # Frontend Service
+  - type: web
+    name: hotel-booking-frontend
+    runtime: static
+    region: oregon
+    plan: free
+    buildCommand: cd hotel-booking-frontend && npm install && npm run build
+    staticPublishPath: ./hotel-booking-frontend/dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://hotel-booking-backend.onrender.com
+      - key: VITE_STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: VITE_GOOGLE_ANALYTICS_ID
+        value: GA_MEASUREMENT_ID
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
