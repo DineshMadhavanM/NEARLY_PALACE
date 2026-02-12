@@ -86,8 +86,9 @@ router.get("/", async (req: Request, res: Response) => {
       version: "1.0.0",
     };
 
-    const statusCode = dbStatus === "connected" ? 200 : 503;
-    res.status(statusCode).json(healthData);
+    // We always return 200 if the server is running to pass Render's health check
+    // even if the database isn't connected yet (as requested)
+    res.status(200).json(healthData);
   } catch (error) {
     res.status(503).json({
       status: "unhealthy",
