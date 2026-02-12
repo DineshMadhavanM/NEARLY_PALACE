@@ -34,7 +34,7 @@ services:
     healthCheckPath: /api/health
 
   # Frontend Service
-  - type: static
+  - type: static_site
     name: hotel-booking-frontend
     rootDir: hotel-booking-frontend
     buildCommand: npm install && npm run build
