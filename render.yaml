@@ -5,8 +5,9 @@ services:
     runtime: node
     region: oregon
     plan: free
-    buildCommand: cd hotel-booking-backend && npm install && npm run build
-    startCommand: cd hotel-booking-backend && npm start
+    rootDir: hotel-booking-backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
@@ -38,8 +39,9 @@ services:
     runtime: static
     region: oregon
     plan: free
-    buildCommand: cd hotel-booking-frontend && npm install && npm run build
-    staticPublishPath: ./hotel-booking-frontend/dist
+    rootDir: hotel-booking-frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
     envVars:
       - key: VITE_API_BASE_URL
         value: https://hotel-booking-backend.onrender.com
