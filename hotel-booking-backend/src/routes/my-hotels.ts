@@ -87,6 +87,7 @@ router.post(
       newHotel.imageUrls = imageUrls;
       newHotel.lastUpdated = new Date();
       newHotel.userId = req.userId;
+      newHotel.isApproved = false; // Require admin approval
 
       const hotel = new Hotel(newHotel);
       await hotel.save();

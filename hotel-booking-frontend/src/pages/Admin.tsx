@@ -60,6 +60,16 @@ const Admin = () => {
             queryClient.invalidateQueries("fetchAdminStats");
             showToast({ title: "Hotel deleted successfully", type: "SUCCESS" });
         },
+
+        onError: (err: any) => showToast({ title: err.message, type: "ERROR" })
+    });
+
+    const approveHotelMutation = useMutation(apiClient.approveAdminHotel, {
+        onSuccess: () => {
+            queryClient.invalidateQueries("fetchAdminHotels");
+            queryClient.invalidateQueries("fetchAdminStats");
+            showToast({ title: "Hotel approved successfully", type: "SUCCESS" });
+        },
         onError: (err: any) => showToast({ title: err.message, type: "ERROR" })
     });
 
@@ -329,15 +339,20 @@ const Admin = () => {
                                                 <div className="flex items-center gap-2 mt-1">
                                                     <Badge variant="outline" className="text-[8px] py-0 px-2 uppercase border-slate-200">{hotel.type}</Badge>
                                                     <span className="text-amber-500 text-[10px]">★ {hotel.starRating}</span>
+                                                    {!hotel.isApproved && (
+                                                        <Badge variant="outline" className="text-[8px] py-0 px-2 uppercase border-amber-200 bg-amber-50 text-amber-600">
+                                                            Pending Approval
+                                                        </Badge>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
                                     </td>
                                     <td className="px-8 py-6">
                                         <div className="flex flex-col gap-1">
-                                            <div className="text-slate-900 flex items-center gap-1.5 font-black uppercase tracking-tight text-xs bg-rose-50 text-rose-600 w-fit px-3 py-1 rounded-full border border-rose-100">
+                                            <div className="flex items-center gap-1.5 font-black uppercase tracking-tight text-xs bg-red-50 text-red-600 w-fit px-3 py-1 rounded-full border border-red-100">
                                                 <MapPin className="w-3.5 h-3.5" />
-                                                {hotel.city}
+                                                {hotel?.city || "Unknown Location"}
                                             </div>
                                         </div>
                                     </td>
@@ -346,6 +361,15 @@ const Admin = () => {
                                     </td>
                                     <td className="px-8 py-6 text-right">
                                         <div className="flex justify-end gap-3">
+                                            {!hotel.isApproved && (
+                                                <button
+                                                    onClick={() => approveHotelMutation.mutate(hotel._id)}
+                                                    className="p-2 text-slate-300 hover:text-green-500 transition-colors"
+                                                    title="Approve Hotel"
+                                                >
+                                                    <CheckCircle2 className="w-5 h-5" />
+                                                </button>
+                                            )}
                                             <button
                                                 className="p-2 text-slate-300 hover:text-red-500 transition-colors"
                                                 onClick={() => {

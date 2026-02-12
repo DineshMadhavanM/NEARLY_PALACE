@@ -98,4 +98,18 @@ router.delete("/hotels/:hotelId", verifyToken, verifyAdmin, async (req: Request,
     }
 });
 
+// APPROVE a hotel
+router.patch("/hotels/:hotelId/approve", verifyToken, verifyAdmin, async (req: Request, res: Response) => {
+    try {
+        const hotelId = req.params.hotelId;
+        const hotel = await Hotel.findByIdAndUpdate(hotelId, { isApproved: true }, { new: true });
+        if (!hotel) {
+            return res.status(404).json({ message: "Hotel not found" });
+        }
+        res.json({ message: "Hotel approved successfully", hotel });
+    } catch (error) {
+        res.status(500).json({ message: "Error approving hotel" });
+    }
+});
+
 export default router;

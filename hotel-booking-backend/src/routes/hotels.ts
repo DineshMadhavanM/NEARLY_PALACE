@@ -192,17 +192,39 @@ router.post(
 const constructSearchQuery = (queryParams: any) => {
   let constructedQuery: any = {};
 
+  // Filter out unapproved hotels (allow undefined/true for legacy, but enforce approval)
+  constructedQuery.isApproved = { $ne: false };
+
   if (queryParams.destination && queryParams.destination.trim() !== "") {
     const destination = queryParams.destination.trim();
 
-    constructedQuery.$or = [
-      { city: { $regex: destination, $options: "i" } },
-      { country: { $regex: destination, $options: "i" } },
-      { name: { $regex: destination, $options: "i" } },
-      { "location.address.city": { $regex: destination, $options: "i" } },
-      { "location.address.country": { $regex: destination, $options: "i" } },
-      { "location.address.state": { $regex: destination, $options: "i" } },
-    ];
+    // Escape special regex characters to prevent regex injection
+    const escapedDestination = destination.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    // Split search into individual words for multi-word matching
+    const searchWords = escapedDestination.split(/\s+/).filter(word => word.length > 0);
+
+    if (searchWords.length === 1) {
+      // Single word search - check if it matches location OR name
+      const singleWordRegex = new RegExp(searchWords[0], "i");
+      constructedQuery.$or = [
+        { city: singleWordRegex },
+        { country: singleWordRegex },
+        { "location.address.city": singleWordRegex },
+        { "location.address.country": singleWordRegex },
+        { "location.address.state": singleWordRegex },
+        { name: singleWordRegex },
+      ];
+    } else {
+      // Multi-word search (e.g., "Vinoth Grand Hotel")
+      // Require ALL words to be present in the name field
+      // This ensures "Vinoth Grand Hotel" matches only hotels with all three words in the name
+      const nameConditions = searchWords.map(word => ({
+        name: new RegExp(word, "i")
+      }));
+
+      constructedQuery.$and = nameConditions;
+    }
   }
 
   if (queryParams.adultCount) {

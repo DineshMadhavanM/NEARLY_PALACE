@@ -51,6 +51,7 @@ export type HotelType = {
   reviewCount?: number;
   occupancyRate?: number;
   isActive?: boolean;
+  isApproved?: boolean;
   isFeatured?: boolean;
   createdAt?: Date;
   updatedAt?: Date;

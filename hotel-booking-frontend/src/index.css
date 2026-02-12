@@ -12,19 +12,19 @@
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 263 90% 51%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 322 81% 54%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --primary: 38 92% 50%;
+    --primary-foreground: 48 96% 98%;
+    --secondary: 24 94% 50%;
+    --secondary-foreground: 60 9.1% 97.8%;
+    --muted: 60 4.8% 95.9%;
+    --muted-foreground: 25 5.3% 44.7%;
+    --accent: 60 4.8% 95.9%;
+    --accent-foreground: 24 9.8% 10%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 45 93% 47%;
+    --destructive-foreground: 60 9.1% 97.8%;
+    --border: 20 5.9% 90%;
+    --input: 20 5.9% 90%;
+    --ring: 38 92% 50%;
     --radius: 0.5rem;
   }
 }
@@ -35,7 +35,7 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-amber-50 text-foreground antialiased;
     font-family: 'Inter', system-ui, sans-serif;
   }
 
@@ -51,18 +51,18 @@
 
 @layer utilities {
   .text-gradient-gold {
-    @apply bg-gradient-to-r from-yellow-600 via-amber-500 to-yellow-600 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-amber-600 via-yellow-500 to-amber-600 bg-clip-text text-transparent;
   }
 
   .text-gradient-purple {
-    @apply bg-gradient-to-r from-purple-600 via-violet-500 to-purple-600 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-orange-600 via-amber-500 to-orange-600 bg-clip-text text-transparent;
   }
 
   .bg-luxury-gradient {
-    @apply bg-gradient-to-br from-amber-50 via-purple-50 to-yellow-50;
+    @apply bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50;
   }
 
   .shadow-luxury {
-    box-shadow: 0 10px 40px -10px rgba(202, 138, 4, 0.2), 0 20px 25px -5px rgba(147, 51, 234, 0.1);
+    box-shadow: 0 10px 40px -10px rgba(245, 158, 11, 0.2), 0 20px 25px -5px rgba(217, 119, 6, 0.1);
   }
 }

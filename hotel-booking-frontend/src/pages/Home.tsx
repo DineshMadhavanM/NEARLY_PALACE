@@ -3,14 +3,28 @@ import * as apiClient from "../api-client";
 import LatestDestinationCard from "../components/LastestDestinationCard";
 // import AdvancedSearch from "../components/AdvancedSearch";
 import Hero from "../components/Hero";
+import { useSearchContext } from "../contexts/SearchContext";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const { data: hotels } = useQuery("fetchQuery", () =>
     apiClient.fetchHotels()
   );
 
+  const search = useSearchContext();
+  const navigate = useNavigate();
+
   const handleSearch = (searchData: any) => {
-    console.log("Search initiated with:", searchData);
+    // Update search context with the destination
+    search.saveSearchValues(
+      searchData.destination || "",
+      search.checkIn,
+      search.checkOut,
+      search.adultCount,
+      search.childCount
+    );
+    // Navigate to search page
+    navigate("/search");
   };
 
   return (

@@ -195,7 +195,7 @@ const ManageHotelForm = ({ onSave, isLoading, hotel, showImages = true }: Props)
                 </>
               ) : (
                 <>
-                  {hotel ? "Update Hotel Listing" : "Create Hotel Listing"}
+                  {hotel ? "Update Hotel Listing" : "Request to Admin"}
                 </>
               )}
             </button>

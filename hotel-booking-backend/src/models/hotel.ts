@@ -61,6 +61,7 @@ const hotelSchema = new mongoose.Schema<HotelType>(
     reviewCount: { type: Number, default: 0 },
     occupancyRate: { type: Number, default: 0 },
     isActive: { type: Boolean, default: true },
+    isApproved: { type: Boolean, default: false }, // Admin approval required
     isFeatured: { type: Boolean, default: false },
     // Audit fields
     createdAt: { type: Date, default: Date.now },

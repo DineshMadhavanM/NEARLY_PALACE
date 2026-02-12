@@ -47,7 +47,7 @@ const Header = () => {
           🚧 Development Mode - Auth state persists between sessions
         </div>
       )} */}
-      <header className="bg-gradient-to-r from-violet-900 via-violet-800 to-fuchsia-900 shadow-luxury sticky top-0 z-50">
+      <header className="bg-gradient-to-r from-amber-600 via-orange-500 to-amber-600 shadow-luxury sticky top-0 z-50">
         <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             {/* Logo */}
@@ -55,10 +55,10 @@ const Header = () => {
               onClick={handleLogoClick}
               className="flex items-center space-x-3 group"
             >
-              <div className="bg-gradient-to-br from-violet-400 to-fuchsia-500 p-2.5 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+              <div className="bg-gradient-to-br from-white/20 to-white/10 p-2.5 rounded-xl shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105 backdrop-blur-sm border border-white/20">
                 <Building2 className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-200 via-fuchsia-100 to-violet-200 tracking-tight group-hover:from-violet-100 group-hover:via-white group-hover:to-violet-100 transition-all duration-300">
+              <span className="text-2xl font-bold text-white tracking-tight group-hover:text-amber-100 transition-all duration-300 drop-shadow-sm">
                 Nearly Palace
               </span>
             </button>

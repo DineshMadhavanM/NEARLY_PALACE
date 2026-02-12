@@ -296,6 +296,11 @@ export const deleteAdminHotel = async (hotelId: string) => {
   return response.data;
 };
 
+export const approveAdminHotel = async (hotelId: string) => {
+  const response = await axiosInstance.patch(`/api/admin/hotels/${hotelId}/approve`);
+  return response.data;
+};
+
 export const fetchInbox = async (): Promise<MessageType[]> => {
   const response = await axiosInstance.get("/api/messages/inbox");
   return response.data;
