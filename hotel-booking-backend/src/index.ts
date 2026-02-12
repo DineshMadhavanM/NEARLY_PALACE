@@ -61,8 +61,7 @@ const connectDB = async () => {
     console.log(`📦 Database: ${mongoose.connection.db.databaseName}`);
   } catch (error) {
     console.error("❌ MongoDB connection error:", error);
-    console.error("💡 Please check your MONGODB_CONNECTION_STRING");
-    process.exit(1);
+    console.warn("💡 Server will stay alive but database features will be unavailable.");
   }
 };
 
