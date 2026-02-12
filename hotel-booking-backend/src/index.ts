@@ -26,8 +26,6 @@ import rateLimit from "express-rate-limit";
 
 // Environment Variables Validation
 const requiredEnvVars = [
-  "MONGODB_CONNECTION_STRING",
-  "JWT_SECRET_KEY",
   "CLOUDINARY_CLOUD_NAME",
   "CLOUDINARY_API_KEY",
   "CLOUDINARY_API_SECRET",

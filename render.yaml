@@ -15,10 +15,7 @@ services:
         value: production
       - key: PORT
         value: 7002
-      - key: MONGODB_CONNECTION_STRING
-        sync: false
-      - key: JWT_SECRET_KEY
-        sync: false
+
       - key: JWT_EXPIRES_IN
         value: 7d
       - key: CLOUDINARY_CLOUD_NAME
