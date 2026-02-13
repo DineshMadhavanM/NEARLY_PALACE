@@ -46,6 +46,8 @@ services:
         sync: false
       - key: VITE_GOOGLE_ANALYTICS_ID
         value: GA_MEASUREMENT_ID
+      - key: VITE_CLERK_PUBLISHABLE_KEY
+        sync: false
     routes:
       - type: rewrite
         source: /*
