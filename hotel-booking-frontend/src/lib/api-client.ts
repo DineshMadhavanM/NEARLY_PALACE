@@ -36,10 +36,25 @@ const axiosInstance = axios.create({
   timeout: 30000, // 30 second timeout
 });
 
-// Request interceptor to add metadata
-axiosInstance.interceptors.request.use((config: CustomAxiosRequestConfig) => {
-  // Add retry count to track retries
-  config.metadata = { retryCount: 0 };
+// Request interceptor to add Clerk JWT token and metadata
+axiosInstance.interceptors.request.use(async (config: CustomAxiosRequestConfig) => {
+  // Add retry count to track retries if not already present
+  if (!config.metadata) {
+    config.metadata = { retryCount: 0 };
+  }
+
+  // Get Clerk JWT token from window.Clerk if available
+  try {
+    const clerk = (window as any).Clerk;
+    if (clerk?.session) {
+      const token = await clerk.session.getToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+  } catch (error) {
+    console.error("Error getting Clerk token:", error);
+  }
 
   return config;
 });
@@ -97,4 +112,5 @@ axiosInstance.interceptors.response.use(
   }
 );
 
+export { axiosInstance };
 export default axiosInstance;
