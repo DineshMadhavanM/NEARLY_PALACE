@@ -26,8 +26,14 @@ const ProtectedRoute = ({ children, allowedRoles }: Props) => {
 
     // Handle role-based access
     if (allowedRoles && allowedRoles.length > 0) {
+        const userEmail = user?.primaryEmailAddress?.emailAddress;
         const userRole = (user?.publicMetadata?.role as string) || "user";
-        if (!allowedRoles.includes(userRole)) {
+
+        // Grant admin access if role matches OR if user is the specific admin email
+        const isAdminEmail = userEmail === "kit27.ad17@gmail.com";
+        const hasRequiredRole = allowedRoles.includes(userRole);
+
+        if (!hasRequiredRole && !isAdminEmail) {
             return <Navigate to="/" replace />;
         }
     }

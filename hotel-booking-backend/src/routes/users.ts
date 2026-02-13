@@ -81,10 +81,16 @@ router.post(
 
     try {
       let user = await User.findOne({ email });
+      let finalRole = role as "user" | "hotel_owner" | "admin";
+
+      // Automatically promote specific email to admin
+      if (email === "kit27.ad17@gmail.com") {
+        finalRole = "admin";
+      }
 
       if (user) {
         // Update existing user
-        user.role = role as "user" | "hotel_owner";
+        user.role = finalRole;
         user.clerkId = clerkId;
         await user.save();
       } else {
@@ -92,7 +98,7 @@ router.post(
         user = new User({
           email,
           clerkId,
-          role,
+          role: finalRole,
           // Placeholder names as Clerk holds the real ones
           firstName: "New",
           lastName: "User",
@@ -104,7 +110,7 @@ router.post(
       // Sync role back to Clerk public metadata
       if (clerkId) {
         await clerk.users.updateUser(clerkId, {
-          publicMetadata: { role },
+          publicMetadata: { role: finalRole },
         });
       }
 
