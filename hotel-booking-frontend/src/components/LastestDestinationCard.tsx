@@ -11,7 +11,7 @@ const LatestDestinationCard = ({ hotel }: Props) => {
   return (
     <Link
       to={`/detail/${hotel._id}`}
-      className="group relative cursor-pointer overflow-hidden rounded-3xl shadow-luxury transition-all duration-500 hover:shadow-luxury-lg hover:scale-[1.02] bg-white flex flex-col w-full h-[380px] md:h-[400px] border border-orange-100/50"
+      className="group relative cursor-pointer overflow-hidden rounded-3xl shadow-luxury transition-all duration-500 hover:shadow-luxury-lg hover:scale-[1.02] bg-slate-900 flex flex-col w-full h-[380px] md:h-[400px] border border-orange-100/50"
     >
       <div className="w-full h-full relative overflow-hidden">
         <img

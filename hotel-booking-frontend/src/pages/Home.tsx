@@ -50,7 +50,7 @@ const Home = () => {
           {/* Horizontal Scroll on Mobile, Grid on Desktop */}
           <div className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 overflow-x-auto md:overflow-visible scrollbar-hide pb-6 -mx-4 px-4 md:mx-0 md:px-0 scroll-smooth snap-x">
             {hotels?.map((hotel) => (
-              <div key={hotel._id} className="min-w-[85vw] md:min-w-0 snap-center">
+              <div key={hotel._id} className="min-w-[82vw] md:min-w-0 snap-center flex-shrink-0">
                 <LatestDestinationCard hotel={hotel} />
               </div>
             ))}

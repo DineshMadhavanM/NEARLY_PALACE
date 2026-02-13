@@ -15,7 +15,7 @@ router.get("/", async (req: Request, res: Response) => {
   try {
     const query = constructSearchQuery(req.query);
 
-    let sortOptions = {};
+    let sortOptions: any = {};
     switch (req.query.sortOption) {
       case "starRating":
         sortOptions = { starRating: -1 };
@@ -26,9 +26,12 @@ router.get("/", async (req: Request, res: Response) => {
       case "pricePerNightDesc":
         sortOptions = { pricePerNight: -1 };
         break;
+      default:
+        sortOptions = { createdAt: -1 }; // Default to newest first
+        break;
     }
 
-    const pageSize = 5;
+    const pageSize = 10;
     const pageNumber = parseInt(
       req.query.page ? req.query.page.toString() : "1"
     );
