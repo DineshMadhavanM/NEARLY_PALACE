@@ -1,7 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
 import useAppContext from "../hooks/useAppContext";
 import useSearchContext from "../hooks/useSearchContext";
-import SignOutButton from "./SignOutButton";
+import {
+  SignedIn,
+  SignedOut,
+  UserButton,
+  SignInButton,
+} from "@clerk/clerk-react";
 import {
   FileText,
   Activity,
@@ -65,7 +70,7 @@ const Header = () => {
 
             {/* Navigation */}
             <nav className="hidden md:flex items-center space-x-1">
-              {isLoggedIn ? (
+              <SignedIn>
                 <>
                   {/* Analytics Dashboard Link - Only for owners and admins */}
                   {(userRole === "hotel_owner" || userRole === "admin") && (
@@ -78,7 +83,6 @@ const Header = () => {
                     </Link>
                   )}
 
-                  {/* <div className="w-px h-6 bg-white/20 mx-2"></div> */}
                   {/* My Bookings Link - For normal users and admins, but not hotel owners */}
                   {(userRole === "user" || userRole === "admin") && (
                     <Link
@@ -153,17 +157,19 @@ const Header = () => {
                     Profile
                   </Link>
 
-                  <SignOutButton />
+                  <div className="flex items-center ml-2 border-l border-white/20 pl-4">
+                    <UserButton afterSignOutUrl="/" />
+                  </div>
                 </>
-              ) : (
-                <Link
-                  to="/sign-in"
-                  className="flex items-center bg-white text-primary-600 px-6 py-2 rounded-lg font-semibold hover:bg-primary-50 hover:shadow-medium transition-all duration-200 group"
-                >
-                  <LogIn className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
-                  Sign In
-                </Link>
-              )}
+              </SignedIn>
+              <SignedOut>
+                <SignInButton mode="modal">
+                  <button className="flex items-center bg-white text-primary-600 px-6 py-2 rounded-lg font-semibold hover:bg-primary-50 hover:shadow-medium transition-all duration-200 group">
+                    <LogIn className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
+                    Sign In
+                  </button>
+                </SignInButton>
+              </SignedOut>
             </nav>
 
             {/* Mobile Menu Button */}

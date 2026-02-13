@@ -8,10 +8,8 @@ import Layout from "./layouts/Layout";
 import AuthLayout from "./layouts/AuthLayout";
 import ScrollToTop from "./components/ScrollToTop";
 import { Toaster } from "./components/ui/toaster";
-import Register from "./pages/Register";
-import SignIn from "./pages/SignIn";
+import { SignIn, SignUp } from "@clerk/clerk-react";
 import AddHotel from "./pages/AddHotel";
-import useAppContext from "./hooks/useAppContext";
 import MyHotels from "./pages/MyHotels";
 import EditHotel from "./pages/EditHotel";
 import Search from "./pages/Search";
@@ -24,9 +22,9 @@ import ApiStatus from "./pages/ApiStatus";
 import AnalyticsDashboard from "./pages/AnalyticsDashboard";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const App = () => {
-  const { isLoggedIn, userEmail } = useAppContext();
   return (
     <Router>
       <ScrollToTop />
@@ -83,7 +81,9 @@ const App = () => {
           path="/register"
           element={
             <AuthLayout>
-              <Register />
+              <div className="flex items-center justify-center py-10">
+                <SignUp signInUrl="/sign-in" />
+              </div>
             </AuthLayout>
           }
         />
@@ -91,74 +91,85 @@ const App = () => {
           path="/sign-in"
           element={
             <AuthLayout>
-              <SignIn />
+              <div className="flex items-center justify-center py-10">
+                <SignIn signUpUrl="/register" />
+              </div>
             </AuthLayout>
           }
         />
 
-        {isLoggedIn && (
-          <>
-            <Route
-              path="/hotel/:hotelId/booking"
-              element={
-                <Layout>
-                  <Booking />
-                </Layout>
-              }
-            />
+        {/* Protected Routes */}
+        <Route
+          path="/hotel/:hotelId/booking"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Booking />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/add-hotel"
+          element={
+            <ProtectedRoute allowedRoles={["hotel_owner", "admin"]}>
+              <Layout>
+                <AddHotel />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/edit-hotel/:hotelId"
+          element={
+            <ProtectedRoute allowedRoles={["hotel_owner", "admin"]}>
+              <Layout>
+                <EditHotel />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-hotels"
+          element={
+            <ProtectedRoute allowedRoles={["hotel_owner", "admin"]}>
+              <Layout>
+                <MyHotels />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-bookings"
+          element={
+            <ProtectedRoute allowedRoles={["user", "admin"]}>
+              <Layout>
+                <MyBookings />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Layout>
+                <Profile />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <Layout>
+                <Admin />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
 
-            <Route
-              path="/add-hotel"
-              element={
-                <Layout>
-                  <AddHotel />
-                </Layout>
-              }
-            />
-            <Route
-              path="/edit-hotel/:hotelId"
-              element={
-                <Layout>
-                  <EditHotel />
-                </Layout>
-              }
-            />
-            <Route
-              path="/my-hotels"
-              element={
-                <Layout>
-                  <MyHotels />
-                </Layout>
-              }
-            />
-            <Route
-              path="/my-bookings"
-              element={
-                <Layout>
-                  <MyBookings />
-                </Layout>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <Layout>
-                  <Profile />
-                </Layout>
-              }
-            />
-            {userEmail === "kit27.ad17@gmail.com" && (
-              <Route
-                path="/admin"
-                element={
-                  <Layout>
-                    <Admin />
-                  </Layout>
-                }
-              />
-            )}
-          </>
-        )}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
       <Toaster />

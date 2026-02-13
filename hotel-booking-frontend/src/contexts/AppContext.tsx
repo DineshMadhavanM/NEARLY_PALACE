@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { useQuery } from "react-query";
-import * as apiClient from "../api-client";
 import { loadStripe, Stripe } from "@stripe/stripe-js";
 import { useToast } from "../hooks/use-toast";
+import { useAuth, useUser } from "@clerk/clerk-react";
+
 
 const STRIPE_PUB_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "";
 
@@ -37,99 +37,26 @@ export const AppContextProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
+  const { isSignedIn, userId, isLoaded } = useAuth();
+  const { user } = useUser();
   const [isGlobalLoading, setIsGlobalLoading] = useState(false);
   const [globalLoadingMessage, setGlobalLoadingMessage] = useState(
     "Hotel room is getting ready..."
   );
   const { toast } = useToast();
 
-  // Simple check for stored tokens without API calls
-  const checkStoredAuth = () => {
-    const localToken = sessionStorage.getItem("session_id") || localStorage.getItem("session_id");
-    const userId = sessionStorage.getItem("user_id") || localStorage.getItem("user_id");
+  const isLoggedIn = !!isSignedIn;
+  const userRole = (user?.publicMetadata?.role as string) || "user";
+  const userEmail = user?.primaryEmailAddress?.emailAddress;
 
-    // Check if we have both token and user ID
-    const hasToken = !!localToken;
-    const hasUserId = !!userId;
-
-    if (hasToken && hasUserId) {
-      console.log("JWT authentication detected - token and user ID found");
-    }
-
-    return hasToken;
-  };
-
-  // Always run validation query - let it handle token checking internally
-  const { isError, isLoading, data } = useQuery(
-    "validateToken",
-    apiClient.validateToken,
-    {
-      retry: false,
-      refetchOnWindowFocus: false, // Don't refetch on focus
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      // Always enabled - let validateToken handle missing tokens
-      enabled: true,
-      // Add fallback for JWT authentication
-      onError: (error: any) => {
-        // If validateToken fails, check if we have a token in storage
-        const storedToken = sessionStorage.getItem("session_id") || localStorage.getItem("session_id");
-        const storedUserId = sessionStorage.getItem("user_id") || localStorage.getItem("user_id");
-
-        if (storedToken && error.response?.status === 401) {
-          console.log(
-            "JWT token found but validation failed - possible token expiration"
-          );
-
-          // If we also have a user ID, we can be more confident it's a valid session
-          if (storedUserId) {
-            console.log("JWT session confirmed - using storage fallback");
-          }
-        }
-      },
-    }
-  );
-
-  // Debug logging to understand the state
-  console.log("Auth Debug:", {
-    isLoading,
-    isError,
-    hasData: !!data,
-    hasStoredToken: checkStoredAuth(),
-    hasUserId: !!(sessionStorage.getItem("user_id") || localStorage.getItem("user_id")),
-    data,
+  // Debug logging to understand the Clerk state
+  console.log("Clerk Auth Debug:", {
+    isLoaded,
+    isSignedIn,
+    userId,
+    userEmail,
+    userRole,
   });
-
-  // Simple logic: logged in if we have valid data OR stored token as fallback
-  const isLoggedIn =
-    (!isLoading && !isError && !!data) || (checkStoredAuth() && isError); // Use stored token only if validation failed
-
-  // Additional fallback: if we just logged in and have a token, consider logged in
-  const justLoggedIn = checkStoredAuth() && !isLoading && !data && !isError;
-
-  // Enhanced JWT authentication detection and fallback
-  const isJWTFallback = () => {
-    // Check if we have a token but validation failed (typical JWT fallback behavior)
-    const hasStoredToken = checkStoredAuth();
-    const hasUserId = !!(sessionStorage.getItem("user_id") || localStorage.getItem("user_id"));
-    const isFallback = hasStoredToken && isError && !data && hasUserId;
-
-    if (isFallback) {
-      console.log(
-        "JWT fallback mode detected - using storage authentication"
-      );
-    }
-
-    return isFallback;
-  };
-
-  const finalIsLoggedIn = isLoggedIn || justLoggedIn || isJWTFallback();
-
-  console.log(
-    "Final isLoggedIn:",
-    finalIsLoggedIn,
-    "JWT Fallback:",
-    isJWTFallback()
-  );
 
   const showToast = (toastMessage: ToastMessage) => {
     const variant =
@@ -161,10 +88,10 @@ export const AppContextProvider = ({
     <AppContext.Provider
       value={{
         showToast,
-        isLoggedIn: finalIsLoggedIn,
-        userId: data?.userId, // Add userId to context
-        userRole: data?.role,
-        userEmail: data?.email,
+        isLoggedIn,
+        userId: userId || undefined,
+        userRole,
+        userEmail,
         stripePromise,
         showGlobalLoading,
         hideGlobalLoading,
