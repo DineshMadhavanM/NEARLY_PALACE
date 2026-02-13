@@ -82,50 +82,19 @@ connectDB();
 
 const app = express();
 
-// Security middleware
-app.use(helmet());
-
 // Trust proxy for production (fixes rate limiting issues)
 app.set("trust proxy", 1);
 
-// Rate limiting - more lenient for payment endpoints
-const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 200, // Increased limit for general requests
-  message: "Too many requests from this IP, please try again later.",
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// Special limiter for payment endpoints
-const paymentLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 50, // Higher limit for payment requests
-  message: "Too many payment requests, please try again later.",
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-app.use("/api/", generalLimiter);
-app.use("/api/hotels/*/bookings/payment-intent", paymentLimiter);
-
-// Compression middleware
-app.use(compression());
-
-// Logging middleware
-app.use(morgan("combined"));
-
+// Improved CORS configuration for production
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   "https://hotel-booking-frontend-u87v.onrender.com",
   "https://hotel-booking-frontend.onrender.com",
+  "https://mern-booking-hotel.netlify.app",
   "http://localhost:5173",
   "https://localhost:5173",
   "http://localhost:5174",
   "https://localhost:5174",
-  "http://localhost:5176",
-  "https://localhost:5176",
-  "https://mern-booking-hotel.netlify.app",
 ].filter((origin): origin is string => Boolean(origin));
 
 const corsOptions: cors.CorsOptions = {
@@ -133,15 +102,14 @@ const corsOptions: cors.CorsOptions = {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
 
-    // Check if origin is in the allowed list or is a preview/deployment URL
     const isAllowed =
       allowedOrigins.includes(origin) ||
       allowedOrigins.includes(origin + "/") ||
-      origin.includes("netlify.app") ||
-      origin.includes("onrender.com");
+      origin.includes("onrender.com") ||
+      origin.includes("netlify.app");
 
     if (isAllowed) {
-      callback(null, true);
+      callback(null, origin); // Reflect the origin explicitly as a string
     } else {
       console.log("CORS blocked origin:", origin);
       callback(new Error("Not allowed by CORS"));
@@ -156,22 +124,48 @@ const corsOptions: cors.CorsOptions = {
     "Cookie",
     "X-Requested-With",
     "Accept",
+    "Origin",
   ],
-  maxAge: 86400, // Cache preflight response for 24 hours
+  maxAge: 86400,
 };
 
 app.use(cors(corsOptions));
-// Explicit preflight handler for all routes
+// Handle preflight for all routes
 app.options("*", cors(corsOptions));
+
+// Security middleware
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use((req, res, next) => {
-  // Ensure Vary header for CORS
-  res.header("Vary", "Origin");
-  next();
+// Compression middleware
+app.use(compression());
+
+// Logging middleware
+app.use(morgan("combined"));
+
+// Rate limiting - more lenient for payment endpoints
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  message: "Too many requests from this IP, please try again later.",
+  standardHeaders: true,
+  legacyHeaders: false,
 });
+
+const paymentLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: "Too many payment requests, please try again later.",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use("/api/", generalLimiter);
+app.use("/api/hotels/*/bookings/payment-intent", paymentLimiter);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("<h1>Hotel Booking Backend API is running 🚀</h1>");
