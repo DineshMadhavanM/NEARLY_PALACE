@@ -8,8 +8,8 @@ const getBaseURL = () => {
   }
 
   // Fallback URLs
-  if (window.location.hostname === "mern-booking-hotel.netlify.app") {
-    return "https://mern-hotel-booking-68ej.onrender.com";
+  if (window.location.hostname === "hotel-booking-frontend-u87v.onrender.com" || window.location.hostname === "hotel-booking-frontend.onrender.com") {
+    return "https://hotel-booking-backend.onrender.com";
   }
 
   // For localhost, use relative path to leverage Vite Proxy
@@ -18,7 +18,7 @@ const getBaseURL = () => {
   }
 
   // Default to production
-  return "https://mern-hotel-booking-68ej.onrender.com";
+  return "https://hotel-booking-backend.onrender.com";
 };
 
 // Extend axios config to include metadata

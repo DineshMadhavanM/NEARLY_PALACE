@@ -117,6 +117,8 @@ app.use(morgan("combined"));
 
 const allowedOrigins = [
   process.env.FRONTEND_URL,
+  "https://hotel-booking-frontend-u87v.onrender.com",
+  "https://hotel-booking-frontend.onrender.com",
   "http://localhost:5173",
   "https://localhost:5173",
   "http://localhost:5174",
@@ -155,6 +157,7 @@ const corsOptions: cors.CorsOptions = {
     "X-Requested-With",
     "Accept",
   ],
+  maxAge: 86400, // Cache preflight response for 24 hours
 };
 
 app.use(cors(corsOptions));
