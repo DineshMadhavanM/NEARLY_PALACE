@@ -85,53 +85,42 @@ const app = express();
 // Trust proxy for production (fixes rate limiting issues)
 app.set("trust proxy", 1);
 
-// Improved CORS configuration for production
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   "https://hotel-booking-frontend-u87v.onrender.com",
   "https://hotel-booking-frontend.onrender.com",
-  "https://mern-booking-hotel.netlify.app",
+  "https://mern-hotel-booking-68ej.onrender.com",
   "http://localhost:5173",
   "https://localhost:5173",
   "http://localhost:5174",
   "https://localhost:5174",
 ].filter((origin): origin is string => Boolean(origin));
 
-const corsOptions: cors.CorsOptions = {
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
+// Manual CORS implementation for absolute control and debugging
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
 
-    const isAllowed =
-      allowedOrigins.includes(origin) ||
-      allowedOrigins.includes(origin + "/") ||
-      origin.includes("onrender.com") ||
-      origin.includes("netlify.app");
+  const isAllowed = origin && (
+    allowedOrigins.includes(origin) ||
+    allowedOrigins.includes(origin + "/") ||
+    origin.includes("onrender.com") ||
+    origin.includes("netlify.app")
+  );
 
-    if (isAllowed) {
-      callback(null, origin); // Reflect the origin explicitly as a string
-    } else {
-      console.log("CORS blocked origin:", origin);
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  credentials: true,
-  optionsSuccessStatus: 204,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-  allowedHeaders: [
-    "Content-Type",
-    "Authorization",
-    "Cookie",
-    "X-Requested-With",
-    "Accept",
-    "Origin",
-  ],
-  maxAge: 86400,
-};
+  if (isAllowed) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS,PATCH");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Cookie, X-Requested-With, Accept, Origin");
+    res.setHeader("Access-Control-Max-Age", "86400");
+  }
 
-app.use(cors(corsOptions));
-// Handle preflight for all routes
-app.options("*", cors(corsOptions));
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
+  next();
+});
 
 // Security middleware
 app.use(helmet({
