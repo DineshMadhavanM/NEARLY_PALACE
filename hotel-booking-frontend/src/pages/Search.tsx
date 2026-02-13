@@ -9,6 +9,7 @@ import HotelTypesFilter from "../components/HotelTypesFilter";
 import FacilitiesFilter from "../components/FacilitiesFilter";
 import PriceFilter from "../components/PriceFilter";
 import SearchBar from "../components/SearchBar";
+import { Filter, SlidersHorizontal, ChevronDown, ChevronUp } from "lucide-react";
 
 const Search = () => {
   const search = useSearchContext();
@@ -18,8 +19,10 @@ const Search = () => {
   const [selectedFacilities, setSelectedFacilities] = useState<string[]>([]);
   const [selectedPrice, setSelectedPrice] = useState<number | undefined>();
   const [sortOption, setSortOption] = useState<string>("");
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
   const searchParams = {
+    // ... same searchParams
     destination: search.destination?.trim() || "",
     checkIn: search.checkIn.toISOString(),
     checkOut: search.checkOut.toISOString(),
@@ -73,22 +76,48 @@ const Search = () => {
     );
   };
 
+  const activeFilterCount = selectedStars.length + selectedHotelTypes.length + selectedFacilities.length + (selectedPrice ? 1 : 0);
+
   return (
     <div className="space-y-6">
       {/* Search Bar */}
-      <div className="bg-white rounded-lg shadow-sm border p-4">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">
-          Modify Your Search
+      <div className="bg-white rounded-2xl shadow-luxury border border-amber-100 p-6">
+        <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+          <SlidersHorizontal className="w-5 h-5 text-amber-600" />
+          Refine Your Selection
         </h2>
         <SearchBar />
       </div>
 
+      {/* Mobile Filter Toggle */}
+      <div className="lg:hidden">
+        <button
+          onClick={() => setIsFiltersOpen(!isFiltersOpen)}
+          className="w-full flex items-center justify-between bg-white px-6 py-4 rounded-xl border-2 border-amber-200 shadow-sm hover:border-amber-400 transition-all font-bold text-slate-700 active:scale-[0.98]"
+        >
+          <div className="flex items-center gap-3">
+            <Filter className="w-5 h-5 text-amber-600" />
+            <span>Search Filters</span>
+            {activeFilterCount > 0 && (
+              <span className="bg-amber-600 text-white text-[10px] font-black rounded-full w-5 h-5 flex items-center justify-center">
+                {activeFilterCount}
+              </span>
+            )}
+          </div>
+          {isFiltersOpen ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+        </button>
+      </div>
+
       {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-[250px_1fr] gap-5">
-        <div className="rounded-lg border border-slate-300 p-5 h-fit lg:sticky lg:top-10 order-2 lg:order-1">
-          <div className="space-y-5">
-            <h3 className="text-lg font-semibold border-b border-slate-300 pb-5">
-              Filter by:
+      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8">
+        {/* Filters Sidebar */}
+        <div className={`
+          ${isFiltersOpen ? 'block animate-in fade-in slide-in-from-top-4' : 'hidden'} 
+          lg:block rounded-2xl border border-slate-200 bg-white p-6 h-fit lg:sticky lg:top-24 order-2 lg:order-1 shadow-sm
+        `}>
+          <div className="space-y-6">
+            <h3 className="text-lg font-black text-slate-800 border-b border-slate-100 pb-4 uppercase tracking-wider">
+              Filter results
             </h3>
             <StarRatingFilter
               selectedStars={selectedStars}
@@ -184,9 +213,9 @@ const Search = () => {
                   destination.
                 </p>
                 {selectedStars.length > 0 ||
-                selectedHotelTypes.length > 0 ||
-                selectedFacilities.length > 0 ||
-                selectedPrice ? (
+                  selectedHotelTypes.length > 0 ||
+                  selectedFacilities.length > 0 ||
+                  selectedPrice ? (
                   <button
                     onClick={() => {
                       setSelectedStars([]);
