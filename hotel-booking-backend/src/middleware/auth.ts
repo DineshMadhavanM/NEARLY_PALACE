@@ -28,11 +28,18 @@ const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
 
   try {
     const sessionClaims = await clerk.verifyToken(token);
+    const clerkId = sessionClaims.sub as string;
 
-    // Clerk uses 'sub' for userId, and we can get email from session claims
-    // Note: sessionClaims might need custom mapping depending on your Clerk setup
-    const email = (sessionClaims as any).email;
-    const clerkId = sessionClaims.sub;
+    // Try to get email from claims first (if configured in Clerk Dashboard)
+    let email = (sessionClaims as any).email;
+
+    // If missing in claims, fetch from Clerk API directly
+    if (!email) {
+      const clerkUser = await clerk.users.getUser(clerkId);
+      email = clerkUser.emailAddresses.find(
+        (e) => e.id === clerkUser.primaryEmailAddressId
+      )?.emailAddress;
+    }
 
     if (!email) {
       return res.status(401).json({ message: "Invalid token: Email missing" });

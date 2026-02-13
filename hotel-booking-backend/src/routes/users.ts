@@ -1,10 +1,11 @@
 import express, { Request, Response } from "express";
 import User from "../models/user";
-import jwt from "jsonwebtoken";
 import { check, validationResult } from "express-validator";
 import verifyToken from "../middleware/auth";
+import { createClerkClient } from "@clerk/clerk-sdk-node";
 
 const router = express.Router();
+const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
 
 router.get("/me", verifyToken, async (req: Request, res: Response) => {
   const userId = req.userId;
@@ -98,6 +99,13 @@ router.post(
           password: "clerk_managed_" + Math.random().toString(36).slice(-8),
         });
         await user.save();
+      }
+
+      // Sync role back to Clerk public metadata
+      if (clerkId) {
+        await clerk.users.updateUser(clerkId, {
+          publicMetadata: { role },
+        });
       }
 
       res.status(200).json(user);

@@ -29,7 +29,18 @@ const RoleGuard = ({ children }: { children: React.ReactNode }) => {
   const { user, isLoaded: userLoaded } = useUser();
   const { isSignedIn, isLoaded: authLoaded } = useAuth();
 
-  if (!userLoaded || !authLoaded) return null;
+  if (!userLoaded || !authLoaded) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-amber-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
+          <p className="text-amber-900 font-medium font-serif italic text-lg animate-pulse">
+            Verifying your luxury session...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const role = user?.publicMetadata?.role;
   const isOnboarding = window.location.pathname === "/onboarding";
