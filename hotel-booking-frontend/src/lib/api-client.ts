@@ -36,16 +36,8 @@ const axiosInstance = axios.create({
   timeout: 30000, // 30 second timeout
 });
 
-// Request interceptor to add Authorization header with JWT token
+// Request interceptor to add metadata
 axiosInstance.interceptors.request.use((config: CustomAxiosRequestConfig) => {
-  // Get JWT token from sessionStorage or localStorage (sessionStorage preferred)
-  const token = sessionStorage.getItem("session_id") || localStorage.getItem("session_id");
-
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-    console.log("Using JWT token for authentication");
-  }
-
   // Add retry count to track retries
   config.metadata = { retryCount: 0 };
 
