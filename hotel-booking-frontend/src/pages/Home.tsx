@@ -30,21 +30,29 @@ const Home = () => {
   return (
     <>
       <Hero onSearch={handleSearch} />
-      <div className="space-y-8">
+      <div className="space-y-4 md:space-y-8 pb-10">
         {/* Latest Destinations Section */}
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Latest Destinations
-            </h2>
-            <p className="text-gray-600">
-              Most recent destinations added by our hosts
-            </p>
+        <div className="max-w-8xl mx-auto px-4 md:px-8 py-4">
+          <div className="flex items-end justify-between mb-6 md:mb-10 px-2">
+            <div className="space-y-1">
+              <h2 className="text-2xl md:text-3xl font-bold text-slate-900 border-l-4 border-amber-500 pl-4">
+                Latest Destinations
+              </h2>
+              <p className="text-sm md:text-base text-slate-500 font-medium">
+                Most recent stays added by our world-class hosts
+              </p>
+            </div>
+            <button className="hidden md:block text-amber-600 font-bold hover:text-amber-700 transition-colors">
+              View All
+            </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {/* Horizontal Scroll on Mobile, Grid on Desktop */}
+          <div className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 overflow-x-auto md:overflow-visible scrollbar-hide pb-6 -mx-4 px-4 md:mx-0 md:px-0 scroll-smooth snap-x">
             {hotels?.map((hotel) => (
-              <LatestDestinationCard key={hotel._id} hotel={hotel} />
+              <div key={hotel._id} className="min-w-[85vw] md:min-w-0 snap-center">
+                <LatestDestinationCard hotel={hotel} />
+              </div>
             ))}
           </div>
         </div>

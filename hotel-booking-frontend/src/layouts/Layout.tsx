@@ -1,6 +1,7 @@
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 import { useLocation } from "react-router-dom";
+import BottomNav from "../components/BottomNav";
 // import Hero from "../components/Hero";
 // import SearchBar from "../components/SearchBar";
 
@@ -22,12 +23,13 @@ const Layout = ({ children }: Props) => {
         <SearchBar />
       </div> */}
       {isHomePage ? (
-        <div className="flex-1">{children}</div>
+        <div className="flex-1 pb-20 md:pb-0">{children}</div>
       ) : (
-        <div className="w-full px-2 sm:px-6 lg:px-8 py-10 flex-1">
+        <div className="w-full px-2 sm:px-6 lg:px-8 py-10 flex-1 pb-20 md:pb-0">
           {children}
         </div>
       )}
+      <BottomNav />
       <Footer />
     </div>
   );
