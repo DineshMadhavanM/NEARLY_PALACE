@@ -40,15 +40,22 @@ const SearchResultsCard = ({ hotel }: Props) => {
   return (
     <div
       data-testid="hotel-card"
-      className="group bg-white rounded-3xl shadow-luxury hover:shadow-luxury-lg transition-all duration-500 border border-orange-100/50 overflow-hidden h-auto xl:h-[450px] flex flex-col md:flex-row"
+      className="group bg-white rounded-3xl shadow-luxury hover:shadow-luxury-lg transition-all duration-500 border border-orange-100/50 overflow-hidden h-[540px] md:h-[450px] flex flex-col md:flex-row"
     >
       <div className="grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-0 w-full h-full">
-        {/* Image Section */}
-        <div className="relative overflow-hidden h-72 md:h-full">
-          <img
-            src={hotel.imageUrls[0]}
-            className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
-          />
+        {/* Image Section - Standardized Height on Mobile */}
+        <div className="relative overflow-hidden h-52 sm:h-64 md:h-full shrink-0">
+          {hotel.imageUrls && hotel.imageUrls[0] ? (
+            <img
+              src={hotel.imageUrls[0]}
+              alt={hotel.name}
+              className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
+            />
+          ) : (
+            <div className="w-full h-full bg-slate-900 flex items-center justify-center">
+              <Building2 className="w-12 h-12 text-amber-500/20" />
+            </div>
+          )}
 
           {/* Overlay Badges */}
           <div className="absolute top-4 left-4 flex flex-col space-y-2 z-10">
@@ -73,81 +80,75 @@ const SearchResultsCard = ({ hotel }: Props) => {
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
         </div>
 
-        {/* Content Section */}
-        <div className="p-6 md:p-8 flex flex-col justify-between h-auto md:h-full bg-gradient-to-br from-white to-orange-50/20">
+        {/* Content Section - Flexible but contained */}
+        <div className="p-6 md:p-8 flex flex-col justify-between h-full bg-gradient-to-br from-white to-orange-50/20 overflow-hidden">
           <div className="space-y-4">
             {/* Header */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               <div className="flex flex-wrap gap-1.5">
-                {Array.isArray(hotel.type) ? (
-                  hotel.type.slice(0, 3).map((type) => (
-                    <Badge
-                      key={type}
-                      variant="outline"
-                      className="text-[10px] px-2 py-0.5 border-orange-200 text-orange-900 font-bold uppercase tracking-tighter bg-orange-50/50"
-                    >
-                      {type}
-                    </Badge>
-                  ))
-                ) : (
-                  <Badge variant="outline" className="text-[10px] px-2 py-0.5 border-orange-200 text-orange-900 font-bold uppercase tracking-tighter bg-orange-50/50">
-                    {hotel.type}
+                {(Array.isArray(hotel.type) ? hotel.type : [hotel.type]).slice(0, 2).map((type) => (
+                  <Badge
+                    key={type}
+                    variant="outline"
+                    className="text-[9px] px-2 py-0 border-orange-200 text-orange-900 font-bold uppercase tracking-tighter bg-orange-50/50"
+                  >
+                    {type}
                   </Badge>
-                )}
+                ))}
               </div>
 
               <Link
                 to={`/detail/${hotel._id}`}
-                className="text-2xl md:text-3xl font-bold text-slate-900 hover:text-amber-600 transition-colors cursor-pointer font-serif italic block leading-tight"
+                className="text-xl md:text-3xl font-bold text-slate-900 hover:text-amber-600 transition-colors cursor-pointer font-serif italic block leading-tight line-clamp-1"
               >
                 {hotel.name}
               </Link>
 
               <div className="flex items-center text-slate-500 font-medium">
-                <MapPin className="w-4 h-4 mr-1.5 text-amber-600" />
-                <span className="text-sm">
+                <MapPin className="w-3.5 h-3.5 mr-1.5 text-amber-600" />
+                <span className="text-xs truncate">
                   {hotel.city}, {hotel.country}
                 </span>
               </div>
             </div>
 
-            {/* Description */}
-            <div className="text-slate-600 leading-relaxed line-clamp-2 md:line-clamp-3 text-sm">
+            {/* Description - Clamped to ensure layout consistency */}
+            <div className="text-slate-600 leading-relaxed line-clamp-2 md:line-clamp-3 text-xs md:text-sm">
               {hotel.description}
             </div>
 
             {/* Hotel Stats */}
-            <div className="flex items-center space-x-6 text-xs font-bold text-slate-400 uppercase tracking-widest">
+            <div className="flex items-center space-x-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">
               {hotel.totalBookings && (
                 <div className="flex items-center space-x-1.5">
-                  <Users className="w-4 h-4 text-orange-400" />
+                  <Users className="w-3.5 h-3.5 text-orange-400" />
                   <span>{hotel.totalBookings} stays</span>
                 </div>
               )}
               <div className="flex items-center space-x-1.5">
-                <Star className="w-4 h-4 text-amber-400 fill-current" />
+                <Star className="w-3.5 h-3.5 text-amber-400 fill-current" />
                 <span>
                   {hotel.averageRating && hotel.averageRating > 0
                     ? `${hotel.averageRating.toFixed(1)} Rating`
-                    : "New Palace"}
+                    : "Elite"}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Footer Area: Amenities & Action */}
-          <div className="mt-6 md:mt-8 pt-6 border-t border-orange-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex flex-wrap gap-2">
-              {hotel.facilities.slice(0, 4).map((facility) => {
+          {/* Footer Area: Overhaul for Mobile space constraint */}
+          <div className="mt-4 pt-4 border-t border-orange-100 flex flex-col gap-4">
+            <div className="flex flex-wrap gap-2 overflow-hidden h-7">
+              {hotel.facilities.slice(0, 3).map((facility) => {
                 const IconComponent = getFacilityIcon(facility);
                 return (
                   <div
                     key={facility}
-                    className="flex items-center space-x-1.5 px-2.5 py-1 bg-white border border-slate-100 rounded-lg shadow-sm"
+                    className="flex items-center space-x-1.5 px-2 py-0.5 bg-white border border-slate-100 rounded-lg shadow-sm"
                     title={facility}
                   >
-                    <IconComponent className="w-3 h-3 text-amber-500" />
-                    <span className="text-[10px] font-bold text-slate-600 whitespace-nowrap">{facility}</span>
+                    <IconComponent className="w-2.5 h-2.5 text-amber-500" />
+                    <span className="text-[9px] font-bold text-slate-600 whitespace-nowrap">{facility}</span>
                   </div>
                 );
               })}
@@ -155,10 +156,10 @@ const SearchResultsCard = ({ hotel }: Props) => {
 
             <Link
               to={`/detail/${hotel._id}`}
-              className="bg-gradient-to-r from-orange-500 to-amber-600 text-white py-3 px-8 rounded-xl font-bold hover:from-orange-600 hover:to-amber-700 transform hover:scale-[1.05] transition-all duration-300 text-center shadow-lg hover:shadow-amber-500/20 flex items-center justify-center gap-2 group"
+              className="bg-gradient-to-r from-orange-500 to-amber-600 text-white py-3 px-8 rounded-xl font-bold hover:from-orange-600 hover:to-amber-700 transform active:scale-95 transition-all duration-300 text-center shadow-lg hover:shadow-amber-500/20 flex items-center justify-center gap-2 group text-sm"
             >
               <span>Explore Suite</span>
-              <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform" />
+              <Sparkles className="w-3.5 h-4 group-hover:rotate-12 transition-transform" />
             </Link>
           </div>
         </div>

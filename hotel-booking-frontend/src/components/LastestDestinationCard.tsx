@@ -11,16 +11,23 @@ const LatestDestinationCard = ({ hotel }: Props) => {
   return (
     <Link
       to={`/detail/${hotel._id}`}
-      className="group relative cursor-pointer overflow-hidden rounded-3xl shadow-luxury transition-all duration-500 hover:shadow-luxury-lg hover:scale-[1.02] bg-slate-900 flex flex-col w-full h-[380px] md:h-[400px] border border-orange-100/50"
+      className="group relative cursor-pointer overflow-hidden rounded-3xl shadow-luxury transition-all duration-500 hover:shadow-luxury-lg hover:scale-[1.02] bg-slate-900 flex flex-col w-full h-[380px] md:h-[400px] border border-orange-100/30"
     >
       <div className="w-full h-full relative overflow-hidden">
-        <img
-          src={hotel.imageUrls[0]}
-          className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
-        />
+        {hotel.imageUrls && hotel.imageUrls[0] ? (
+          <img
+            src={hotel.imageUrls[0]}
+            alt={hotel.name}
+            className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center">
+            <Sparkles className="w-12 h-12 text-amber-500/20" />
+          </div>
+        )}
 
         {/* Overlay Graduate - Darker for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
         {/* Hotel Stats Badge */}
         <div className="absolute top-4 right-4 z-10">
@@ -42,40 +49,31 @@ const LatestDestinationCard = ({ hotel }: Props) => {
         <div className="absolute bottom-0 p-6 w-full z-10">
           <div className="space-y-3">
             <div className="space-y-1">
-              <h3 className="text-white font-bold text-2xl leading-none tracking-tight group-hover:text-amber-200 transition-colors font-serif italic">
+              <h3 className="text-white font-bold text-2xl leading-tight tracking-tight group-hover:text-amber-200 transition-colors font-serif italic line-clamp-2 min-h-[3.5rem] flex items-end">
                 {hotel.name}
               </h3>
 
               <div className="flex items-center space-x-2 text-amber-100/90">
                 <MapPin className="w-3.5 h-3.5" />
-                <span className="text-xs font-semibold tracking-wide">
+                <span className="text-xs font-semibold tracking-wide truncate">
                   {hotel.city}, {hotel.country}
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-2 border-t border-white/10">
+            <div className="flex items-center justify-between pt-3 border-t border-white/10">
               <div className="flex flex-col space-y-2">
-                {/* Hotel Types */}
+                {/* Hotel Types - Limited to 1 on mobile to prevent overflow */}
                 <div className="flex flex-wrap gap-1.5">
-                  {Array.isArray(hotel.type) ? (
-                    hotel.type.slice(0, 2).map((type) => (
-                      <Badge
-                        key={type}
-                        variant="outline"
-                        className="text-[10px] px-2 py-0.5 glassmorphism border-white/20 text-white font-bold uppercase tracking-tighter"
-                      >
-                        {type}
-                      </Badge>
-                    ))
-                  ) : (
+                  {(Array.isArray(hotel.type) ? hotel.type : [hotel.type]).slice(0, 1).map((type) => (
                     <Badge
+                      key={type}
                       variant="outline"
-                      className="text-[10px] px-2 py-0.5 glassmorphism border-white/20 text-white font-bold uppercase tracking-tighter"
+                      className="text-[9px] px-2 py-0.5 glassmorphism border-white/20 text-white font-bold uppercase tracking-tighter"
                     >
-                      {hotel.type}
+                      {type}
                     </Badge>
-                  )}
+                  ))}
                 </div>
               </div>
 
