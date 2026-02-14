@@ -211,8 +211,9 @@ router.put(
       console.error("Hotel ID:", req.params.hotelId);
       console.error("User ID:", req.userId);
       res.status(500).json({
-        message: "Something went wrong",
+        message: "Something went wrong during hotel update",
         error: error instanceof Error ? error.message : "Unknown error",
+        tip: "Please verify CLOUDINARY and CLERK environment variables in your Render Backend settings."
       });
     }
   }
