@@ -1,58 +1,51 @@
-import { useQuery } from "react-query";
-import * as apiClient from "../api-client";
-import LatestDestinationCard from "../components/LastestDestinationCard";
-// import AdvancedSearch from "../components/AdvancedSearch";
 import Hero from "../components/Hero";
 import { useSearchContext } from "../contexts/SearchContext";
 import { useNavigate } from "react-router-dom";
 
 const Home = () => {
-  const { data: hotels } = useQuery("fetchQuery", () =>
-    apiClient.fetchHotels()
-  );
-
   const search = useSearchContext();
   const navigate = useNavigate();
+  const places = ["Chennai", "Coimbatore", "Theni", "Kerala"];
 
-  const handleSearch = (searchData: any) => {
-    // Update search context with the destination
+  const handlePlaceClick = (place: string) => {
     search.saveSearchValues(
-      searchData.destination || "",
+      place,
       search.checkIn,
       search.checkOut,
       search.adultCount,
       search.childCount
     );
-    // Navigate to search page
-    navigate("/search");
+    navigate("/search?destination=" + place);
   };
 
   return (
     <>
-      <Hero onSearch={handleSearch} />
-      <div className="space-y-4 md:space-y-8 pb-10">
-        {/* Latest Destinations Section */}
-        <div className="max-w-8xl mx-auto px-4 md:px-8 py-4">
-          <div className="flex items-end justify-between mb-6 md:mb-10 px-2">
-            <div className="space-y-1">
-              <h2 className="text-2xl md:text-3xl font-bold text-slate-900 border-l-4 border-amber-500 pl-4">
-                Latest Destinations
-              </h2>
-              <p className="text-sm md:text-base text-slate-500 font-medium">
-                Most recent stays added by our world-class hosts
-              </p>
-            </div>
-            <button className="hidden md:block text-amber-600 font-bold hover:text-amber-700 transition-colors">
-              View All
-            </button>
-          </div>
-
-          {/* Horizontal Scroll on Mobile, Grid on Desktop */}
-          <div className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 overflow-x-auto md:overflow-visible scrollbar-hide pb-6 -mx-4 px-4 md:mx-0 md:px-0 scroll-smooth snap-x">
-            {hotels?.map((hotel) => (
-              <div key={hotel._id} className="min-w-[82vw] md:min-w-0 snap-center flex-shrink-0">
-                <LatestDestinationCard hotel={hotel} />
-              </div>
+      <Hero />
+      <div className="space-y-4 md:space-y-8 pb-10 mt-10">
+        <div className="max-w-6xl mx-auto px-4 md:px-8">
+          <h2 className="text-3xl font-bold text-center mb-8 text-slate-800">
+            Explore Top Destinations
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {places.map((place) => (
+              <button
+                key={place}
+                onClick={() => handlePlaceClick(place)}
+                className="bg-white rounded-lg shadow-md p-6 hover:shadow-xl transition-all duration-300 border border-slate-200 group flex flex-col items-center justify-center gap-4 hover:-translate-y-1"
+              >
+                <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center group-hover:bg-amber-500 transition-colors duration-300">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-amber-600 group-hover:text-white transition-colors duration-300">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                  </svg>
+                </div>
+                <span className="text-xl font-bold text-slate-700 group-hover:text-amber-600 transition-colors">
+                  {place}
+                </span>
+                <span className="text-sm text-slate-500 font-medium">
+                  View Hotels
+                </span>
+              </button>
             ))}
           </div>
         </div>
