@@ -11,8 +11,11 @@ import PriceFilter from "../components/PriceFilter";
 import SearchBar from "../components/SearchBar";
 import { Filter, SlidersHorizontal, ChevronDown, ChevronUp } from "lucide-react";
 
+import { useSearchParams } from "react-router-dom"; // Add import
+
 const Search = () => {
   const search = useSearchContext();
+  const [searchParamsURL] = useSearchParams(); // Get URL params
   const [page, setPage] = useState<number>(1);
   const [selectedStars, setSelectedStars] = useState<string[]>([]);
   const [selectedHotelTypes, setSelectedHotelTypes] = useState<string[]>([]);
@@ -22,8 +25,7 @@ const Search = () => {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
   const searchParams = {
-    // ... same searchParams
-    destination: search.destination?.trim() || "",
+    destination: searchParamsURL.get("destination") || search.destination?.trim() || "",
     checkIn: search.checkIn.toISOString(),
     checkOut: search.checkOut.toISOString(),
     adultCount: search.adultCount.toString(),

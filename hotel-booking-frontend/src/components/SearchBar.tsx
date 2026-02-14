@@ -60,8 +60,9 @@ const SearchBar = () => {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
+        const responseJson = await response.json();
         const data: { city?: string; place?: string; name?: string }[] =
-          await response.json();
+          responseJson.data || [];
         const uniquePlaces: string[] = Array.from(
           new Set(
             data

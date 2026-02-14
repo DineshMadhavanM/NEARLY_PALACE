@@ -18,9 +18,20 @@ const Home = () => {
     navigate("/search?destination=" + place);
   };
 
+  const handleSearch = (searchData: any) => {
+    search.saveSearchValues(
+      searchData.destination || "",
+      search.checkIn,
+      search.checkOut,
+      search.adultCount,
+      search.childCount
+    );
+    navigate("/search?destination=" + (searchData.destination || ""));
+  };
+
   return (
     <>
-      <Hero />
+      <Hero onSearch={handleSearch} />
       <div className="space-y-4 md:space-y-8 pb-10 mt-10">
         <div className="max-w-6xl mx-auto px-4 md:px-8">
           <h2 className="text-3xl font-bold text-center mb-8 text-slate-800">
