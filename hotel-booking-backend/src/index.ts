@@ -30,6 +30,8 @@ const requiredEnvVars = [
   "CLOUDINARY_API_KEY",
   "CLOUDINARY_API_SECRET",
   "STRIPE_API_KEY",
+  "CLERK_SECRET_KEY",
+  "JWT_SECRET_KEY",
 ];
 
 const missingEnvVars = requiredEnvVars.filter((envVar) => !process.env[envVar]);

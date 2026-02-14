@@ -59,8 +59,11 @@ router.put(
 
       res.json(user);
     } catch (error) {
-      console.log(error);
-      res.status(500).json({ message: "Something went wrong" });
+      console.error("FATAL ERROR in PUT /api/users/me:", error);
+      res.status(500).json({
+        message: "Internal Server Error updating user profile",
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
     }
   }
 );
@@ -116,8 +119,12 @@ router.post(
 
       res.status(200).json(user);
     } catch (error) {
-      console.error("Onboarding Error:", error);
-      res.status(500).json({ message: "Something went wrong during onboarding" });
+      console.error("CRITICAL Onboarding Error:", error);
+      res.status(500).json({
+        message: "Something went wrong during onboarding",
+        error: error instanceof Error ? error.message : "Unknown error",
+        tip: "Check CLERK_SECRET_KEY in Render environment variables"
+      });
     }
   }
 );

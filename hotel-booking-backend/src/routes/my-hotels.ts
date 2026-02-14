@@ -95,7 +95,11 @@ router.post(
       res.status(201).send(hotel);
     } catch (e) {
       console.error("FATAL ERROR in POST /api/my-hotels:", e);
-      res.status(500).json({ message: "Internal Server Error during hotel creation" });
+      res.status(500).json({
+        message: "Internal Server Error during hotel creation",
+        error: e instanceof Error ? e.message : "Unknown error",
+        tip: "Check CLOUDINARY and CLERK environment variables in Render"
+      });
     }
   }
 );
