@@ -1,12 +1,12 @@
 
 import express, { Request, Response } from "express";
-import verifyToken, { requireRole } from "../middleware/auth";
+import verifyToken, { requireEmail, requireRole } from "../middleware/auth";
 import Hotel from "../models/hotel";
 import Booking from "../models/booking";
 
 const router = express.Router();
 
-router.get("/dashboard", verifyToken, requireRole(["hotel_owner", "admin"]), async (req: Request, res: Response) => {
+router.get("/dashboard", verifyToken, requireEmail(["kit27.ad17@gmail.com"]), requireRole(["hotel_owner", "admin"]), async (req: Request, res: Response) => {
     try {
         const hotels = await Hotel.find({ userId: req.userId });
         const hotelIds = hotels.map((hotel) => hotel._id);

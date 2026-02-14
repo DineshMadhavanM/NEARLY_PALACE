@@ -105,9 +105,11 @@ const App = () => {
           <Route
             path="/analytics"
             element={
-              <Layout>
-                <AnalyticsDashboard />
-              </Layout>
+              <ProtectedRoute allowedEmails={["kit27.ad17@gmail.com"]}>
+                <Layout>
+                  <AnalyticsDashboard />
+                </Layout>
+              </ProtectedRoute>
             }
           />
           <Route

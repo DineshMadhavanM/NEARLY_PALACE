@@ -56,13 +56,6 @@ const Header = () => {
 
     return (
       <>
-        {/* Analytics Dashboard Link */}
-        {(userRole === "hotel_owner" || userRole === "admin") && (
-          <Link className={linkClass} to="/analytics" onClick={() => setIsMobileMenuOpen(false)}>
-            <BarChart3 className={mobile ? iconClass : "w-4 h-4 mr-2 group-hover:scale-110 transition-transform"} />
-            Analytics
-          </Link>
-        )}
 
         {/* My Bookings Link */}
         {(userRole === "user" || userRole === "admin") && (
@@ -83,6 +76,10 @@ const Header = () => {
         {/* Admin Secret Links */}
         {userEmail === "kit27.ad17@gmail.com" && (
           <>
+            <Link className={linkClass} to="/analytics" onClick={() => setIsMobileMenuOpen(false)}>
+              <BarChart3 className={mobile ? iconClass : "w-4 h-4 mr-2 group-hover:scale-110 transition-transform"} />
+              Analytics
+            </Link>
             <Link className={linkClass} to="/api-docs" onClick={() => setIsMobileMenuOpen(false)}>
               <FileText className={mobile ? iconClass : "w-4 h-4 mr-2 group-hover:scale-110 transition-transform"} />
               API Docs

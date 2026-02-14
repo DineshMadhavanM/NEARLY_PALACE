@@ -85,4 +85,13 @@ export const requireRole = (roles: string[]) => {
   };
 };
 
+export const requireEmail = (emails: string[]) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!req.userEmail || !emails.includes(req.userEmail)) {
+      return res.status(403).json({ message: "Access denied: Specific email required" });
+    }
+    next();
+  };
+};
+
 export default verifyToken;

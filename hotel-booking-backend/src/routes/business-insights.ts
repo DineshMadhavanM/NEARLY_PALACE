@@ -3,7 +3,7 @@ import Hotel from "../models/hotel";
 import User from "../models/user";
 import Booking from "../models/booking";
 import mongoose from "mongoose";
-import verifyToken from "../middleware/auth";
+import verifyToken, { requireEmail } from "../middleware/auth";
 
 const router = express.Router();
 
@@ -34,7 +34,7 @@ interface BookingDocument {
  *       200:
  *         description: Business insights dashboard data
  */
-router.get("/dashboard", verifyToken, async (req: Request, res: Response) => {
+router.get("/dashboard", verifyToken, requireEmail(["kit27.ad17@gmail.com"]), async (req: Request, res: Response) => {
   try {
     // Get current date and date 30 days ago
     const now = new Date();
@@ -305,7 +305,7 @@ router.get("/dashboard", verifyToken, async (req: Request, res: Response) => {
  *       200:
  *         description: Forecasting data
  */
-router.get("/forecast", verifyToken, async (req: Request, res: Response) => {
+router.get("/forecast", verifyToken, requireEmail(["kit27.ad17@gmail.com"]), async (req: Request, res: Response) => {
   try {
     const now = new Date();
     const lastMonth = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
@@ -496,7 +496,7 @@ router.get("/forecast", verifyToken, async (req: Request, res: Response) => {
  *       200:
  *         description: Performance metrics
  */
-router.get("/performance", verifyToken, async (req: Request, res: Response) => {
+router.get("/performance", verifyToken, requireEmail(["kit27.ad17@gmail.com"]), async (req: Request, res: Response) => {
   try {
     const memUsage = process.memoryUsage();
     const cpuUsage = process.cpuUsage();
@@ -531,16 +531,16 @@ router.get("/performance", verifyToken, async (req: Request, res: Response) => {
       today: today.toISOString(),
       sampleBooking: allBookings[0]
         ? {
-            createdAt: new Date(allBookings[0].createdAt).toISOString(),
-            checkIn: new Date(allBookings[0].checkIn).toISOString(),
-            bookingDateString: new Date(
-              allBookings[0].createdAt
-            ).toDateString(),
-            todayDateString: today.toDateString(),
-            weekAgo: new Date(
-              today.getTime() - 7 * 24 * 60 * 60 * 1000
-            ).toISOString(),
-          }
+          createdAt: new Date(allBookings[0].createdAt).toISOString(),
+          checkIn: new Date(allBookings[0].checkIn).toISOString(),
+          bookingDateString: new Date(
+            allBookings[0].createdAt
+          ).toDateString(),
+          todayDateString: today.toDateString(),
+          weekAgo: new Date(
+            today.getTime() - 7 * 24 * 60 * 60 * 1000
+          ).toISOString(),
+        }
         : null,
     });
 
