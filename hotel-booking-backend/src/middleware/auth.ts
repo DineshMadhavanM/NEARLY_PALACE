@@ -16,14 +16,21 @@ declare global {
 }
 
 const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
+  console.log("--- Auth Middleware Begin ---");
+  console.log("URL:", req.originalUrl);
+  console.log("Headers:", JSON.stringify(req.headers, null, 2));
+  console.log("Cookies:", JSON.stringify(req.cookies || {}, null, 2));
+
   const headerToken = req.headers.authorization?.startsWith("Bearer ")
     ? req.headers.authorization.split(" ")[1]
     : null;
 
-  const token = headerToken;
+  const cookieToken = req.cookies?.auth_token || req.cookies?.__session;
+  const token = headerToken || cookieToken;
 
   if (!token) {
-    return res.status(401).json({ message: "Access denied" });
+    console.warn("Auth Middleware: No token found in Authorization header or cookies");
+    return res.status(401).json({ message: "Access denied: No token provided" });
   }
 
   try {
@@ -49,9 +56,7 @@ const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
     let user = await User.findOne({ email });
 
     if (!user) {
-      // If user doesn't exist in DB but has a Clerk token, we might need to create them
-      // For now, we'll mark them as "un-onboarded" by not setting a valid userId
-      // or handle it in the onboarding flow.
+      console.log(`Auth Middleware: email ${email} not found in MongoDB. Proceeding as 'user' role.`);
       req.userEmail = email;
       req.clerkId = clerkId;
       req.userRole = "user"; // Default role
@@ -69,10 +74,11 @@ const verifyToken = async (req: Request, res: Response, next: NextFunction) => {
     req.userEmail = user.email;
     req.clerkId = clerkId;
 
+    console.log(`Auth Middleware: Verified User ${req.userEmail} with role ${req.userRole}`);
     next();
   } catch (error) {
     console.error("Clerk Verify Error:", error);
-    return res.status(401).json({ message: "Invalid session" });
+    return res.status(401).json({ message: "Invalid session or token" });
   }
 };
 

@@ -344,6 +344,15 @@ const Admin = () => {
                                                             Pending Approval
                                                         </Badge>
                                                     )}
+                                                    {hotel.isListingFeePaid ? (
+                                                        <Badge variant="outline" className="text-[8px] py-0 px-2 uppercase border-emerald-200 bg-emerald-50 text-emerald-600">
+                                                            Fee Paid
+                                                        </Badge>
+                                                    ) : (
+                                                        <Badge variant="outline" className="text-[8px] py-0 px-2 uppercase border-slate-200 bg-slate-50 text-slate-500">
+                                                            Fee Unpaid
+                                                        </Badge>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -363,9 +372,19 @@ const Admin = () => {
                                         <div className="flex justify-end gap-3">
                                             {!hotel.isApproved && (
                                                 <button
-                                                    onClick={() => approveHotelMutation.mutate(hotel._id)}
-                                                    className="p-2 text-slate-300 hover:text-green-500 transition-colors"
-                                                    title="Approve Hotel"
+                                                    onClick={() => {
+                                                        if (hotel.isListingFeePaid) {
+                                                            approveHotelMutation.mutate(hotel._id);
+                                                        } else {
+                                                            showToast({
+                                                                title: "Fee Unpaid",
+                                                                description: "This hotel must pay the listing fee before approval.",
+                                                                type: "ERROR"
+                                                            });
+                                                        }
+                                                    }}
+                                                    className={`p-2 transition-colors ${hotel.isListingFeePaid ? 'text-slate-300 hover:text-green-500' : 'text-slate-200 cursor-not-allowed'}`}
+                                                    title={hotel.isListingFeePaid ? "Approve Hotel" : "Fee Unpaid"}
                                                 >
                                                     <CheckCircle2 className="w-5 h-5" />
                                                 </button>

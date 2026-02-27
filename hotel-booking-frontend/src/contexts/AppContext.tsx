@@ -37,7 +37,7 @@ export const AppContextProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const { isSignedIn, userId, isLoaded } = useAuth();
+  const { isSignedIn, userId, isLoaded, getToken } = useAuth();
   const { user } = useUser();
   const [isGlobalLoading, setIsGlobalLoading] = useState(false);
   const [globalLoadingMessage, setGlobalLoadingMessage] = useState(
@@ -48,6 +48,25 @@ export const AppContextProvider = ({
   const isLoggedIn = !!isSignedIn;
   const userRole = (user?.publicMetadata?.role as string) || "user";
   const userEmail = user?.primaryEmailAddress?.emailAddress;
+
+  // Sync token for axios interceptor fallback
+  React.useEffect(() => {
+    const syncToken = async () => {
+      if (isSignedIn) {
+        try {
+          const token = await getToken();
+          if (token) {
+            sessionStorage.setItem("session_id", token);
+          }
+        } catch (e) {
+          console.error("Failed to sync Clerk token:", e);
+        }
+      } else {
+        sessionStorage.removeItem("session_id");
+      }
+    };
+    syncToken();
+  }, [isSignedIn, getToken]);
 
   // Debug logging to understand the Clerk state
   console.log("Clerk Auth Debug:", {

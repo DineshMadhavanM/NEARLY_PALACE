@@ -3,7 +3,7 @@ import multer from "multer";
 import cloudinary from "cloudinary";
 import Hotel from "../models/hotel";
 import verifyToken, { requireRole } from "../middleware/auth";
-import { body } from "express-validator";
+import { body, validationResult } from "express-validator";
 import { HotelType } from "../../../shared/types";
 
 const router = express.Router();
@@ -20,6 +20,7 @@ router.post(
   "/",
   verifyToken,
   requireRole(["hotel_owner", "admin"]),
+  upload.array("imageFiles", 6),
   [
     body("name").notEmpty().withMessage("Name is required"),
     body("city").notEmpty().withMessage("City is required"),
@@ -27,7 +28,6 @@ router.post(
     body("description").notEmpty().withMessage("Description is required"),
     body("type")
       .notEmpty()
-      .isArray({ min: 1 })
       .withMessage("Select at least one hotel type"),
     body("pricePerNight")
       .notEmpty()
@@ -35,7 +35,6 @@ router.post(
       .withMessage("Price per night is required and must be a number"),
     body("facilities")
       .notEmpty()
-      .isArray()
       .withMessage("Facilities are required"),
     body("adultCount")
       .notEmpty()
@@ -51,7 +50,6 @@ router.post(
       .isInt({ min: 1, max: 5 })
       .withMessage("Star rating is required and must be between 1 and 5"),
   ],
-  upload.array("imageFiles", 6),
   async (req: Request, res: Response) => {
     try {
       const imageFiles = (req as any).files as any[];
@@ -60,6 +58,12 @@ router.post(
       console.log("POST /api/my-hotels - Request Received");
       console.log("Body:", JSON.stringify(req.body, null, 2));
       console.log("Files received:", imageFiles?.length || 0);
+
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        console.warn("Validation errors in hotel creation:", errors.array());
+        return res.status(400).json({ errors: errors.array() });
+      }
 
 
       // Ensure type is always an array

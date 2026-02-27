@@ -24,6 +24,7 @@ import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Onboarding from "./pages/Onboarding";
+import About from "./pages/About";
 
 const RoleGuard = ({ children }: { children: React.ReactNode }) => {
   const { user, isLoaded: userLoaded } = useUser();
@@ -99,6 +100,14 @@ const App = () => {
             element={
               <Layout>
                 <ApiStatus />
+              </Layout>
+            }
+          />
+          <Route
+            path="/about"
+            element={
+              <Layout>
+                <About />
               </Layout>
             }
           />

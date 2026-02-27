@@ -54,6 +54,7 @@ export type HotelType = {
   isActive?: boolean;
   isApproved?: boolean;
   isFeatured?: boolean;
+  isListingFeePaid?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 };

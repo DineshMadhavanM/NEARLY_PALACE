@@ -15,7 +15,10 @@ import {
   Plane,
   Building2,
   Star,
+  CreditCard,
 } from "lucide-react";
+import useAppContext from "../hooks/useAppContext";
+import { useMutation, useQueryClient } from "react-query";
 
 const Detail = () => {
   const { hotelId } = useParams();
@@ -28,6 +31,64 @@ const Detail = () => {
       loadingMessage: "Loading hotel details...",
     }
   );
+
+  const { userId, showToast } = useAppContext();
+  const queryClient = useQueryClient();
+
+  const createOrderMutation = useMutation(apiClient.createListingFeeOrder, {
+    onSuccess: (order) => {
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: order.amount,
+        currency: order.currency,
+        name: "Nearly Palace",
+        description: `Listing Fee for ${hotel?.name}`,
+        order_id: order.id,
+        handler: async (response: any) => {
+          try {
+            await verifyPaymentMutation.mutateAsync({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              hotelId: hotel?._id || "",
+            });
+            showToast({ title: "Listing fee paid successfully!", type: "SUCCESS" });
+          } catch (error) {
+            showToast({ title: "Payment verification failed", type: "ERROR" });
+          }
+        },
+        prefill: {
+          name: hotel?.name,
+          email: hotel?.contact?.email,
+          contact: hotel?.contact?.phone,
+        },
+        theme: {
+          color: "#f59e0b",
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+    },
+    onError: (error: any) => {
+      showToast({ title: error.message, type: "ERROR" });
+    },
+  });
+
+  const verifyPaymentMutation = useMutation(apiClient.verifyListingFee, {
+    onSuccess: () => {
+      queryClient.invalidateQueries("fetchHotelById");
+    },
+  });
+
+  const handlePayment = () => {
+    if (hotelId) {
+      createOrderMutation.mutate(hotelId);
+    }
+  };
+
+  const isOwner = userId === hotel?.userId;
+  const needsListingFee = isOwner && !hotel?.isListingFeePaid;
 
   if (!hotel) {
     return (
@@ -105,6 +166,37 @@ const Detail = () => {
               </div>
             )}
           </div>
+
+          {needsListingFee && (
+            <div className="mt-8 p-6 bg-slate-900 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+
+              <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+                <div className="flex items-center gap-6">
+                  <div className="w-16 h-16 rounded-3xl bg-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/20">
+                    <CreditCard className="w-8 h-8 text-slate-900" />
+                  </div>
+                  <div>
+                    <h4 className="text-2xl font-black tracking-tight">Request Admin Approval</h4>
+                    <p className="text-slate-400 font-medium">Pay the one-time listing fee to publish your palace to all users.</p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handlePayment}
+                  disabled={createOrderMutation.isLoading}
+                  className="bg-amber-500 text-slate-900 px-10 py-5 rounded-2xl font-black uppercase tracking-widest hover:bg-amber-400 transition-all transform hover:scale-105 active:scale-95 disabled:bg-slate-700 disabled:text-slate-500 shadow-xl flex items-center gap-3"
+                >
+                  {createOrderMutation.isLoading ? (
+                    <div className="w-5 h-5 border-2 border-slate-900/30 border-t-slate-900 rounded-full animate-spin"></div>
+                  ) : (
+                    <CreditCard className="w-5 h-5" />
+                  )}
+                  Pay Listing Fee (₹10)
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Hero Image Gallery */}

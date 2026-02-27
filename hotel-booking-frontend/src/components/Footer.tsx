@@ -102,7 +102,7 @@ const Footer = () => {
               </li>
               <li>
                 <a
-                  href="#"
+                  href="/about"
                   className="text-amber-100/80 hover:text-amber-200 transition-colors font-medium flex items-center gap-2 group"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-400 group-hover:scale-150 transition-transform"></span>
@@ -189,7 +189,7 @@ const Footer = () => {
                 </div>
                 <div>
                   <p className="text-xs text-amber-300 font-semibold uppercase tracking-wider mb-1">Email</p>
-                  <span className="text-amber-100/90 font-medium">support@nearlypalace.com</span>
+                  <span className="text-amber-100/90 font-medium">madhavandineshm17@gmail.com</span>
                 </div>
               </div>
               <div className="flex items-start space-x-3 group">
@@ -198,7 +198,7 @@ const Footer = () => {
                 </div>
                 <div>
                   <p className="text-xs text-amber-300 font-semibold uppercase tracking-wider mb-1">Phone</p>
-                  <span className="text-amber-100/90 font-medium">+1 (555) 123-4567</span>
+                  <span className="text-amber-100/90 font-medium">+91 63754561199</span>
                 </div>
               </div>
               <div className="flex items-start space-x-3 group">
@@ -208,7 +208,7 @@ const Footer = () => {
                 <div>
                   <p className="text-xs text-amber-300 font-semibold uppercase tracking-wider mb-1">Address</p>
                   <span className="text-amber-100/90 font-medium">
-                    123 Luxury Lane, Palace District
+                    Theni, Tamil Nadu, India
                   </span>
                 </div>
               </div>

@@ -9,26 +9,68 @@ const AddHotel = () => {
   const navigate = useNavigate();
 
   const { mutate, isLoading } = useMutation(apiClient.addMyHotel, {
-    onSuccess: () => {
+    onSuccess: (newHotel) => {
       showToast({
-        title: "Hotel Added Successfully",
-        description:
-          "Your hotel has been added to the platform! Redirecting to your dashboard...",
+        title: "Hotel Created",
+        description: "Now, please pay the listing fee to request admin approval.",
         type: "SUCCESS",
       });
-      // Redirect to My Hotels page after successful save
-      setTimeout(() => {
-        navigate("/my-hotels");
-      }, 1500);
+      // Start payment flow
+      createOrderMutation.mutate(newHotel._id);
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error("Failed to Add Hotel - Error Object:", error);
+      if (error.response) {
+        console.error("Error Response Data:", error.response.data);
+        console.error("Error Response Status:", error.response.status);
+      }
       showToast({
         title: "Failed to Add Hotel",
-        description: "There was an error saving your property. Please check your information and try again.",
+        description: error.response?.data?.message || "There was an error saving your property. Please check your information and try again.",
         type: "ERROR",
       });
     },
   });
+
+  const createOrderMutation = useMutation(apiClient.createListingFeeOrder, {
+    onSuccess: (order, hotelId) => {
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: order.amount,
+        currency: order.currency,
+        name: "Nearly Palace",
+        description: "Listing Fee Payment",
+        order_id: order.id,
+        handler: async (response: any) => {
+          try {
+            await verifyPaymentMutation.mutateAsync({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              hotelId: hotelId,
+            });
+            showToast({ title: "Listing fee paid successfully!", type: "SUCCESS" });
+            navigate(`/detail/${hotelId}`);
+          } catch (error) {
+            showToast({ title: "Payment verification failed", type: "ERROR" });
+            navigate("/my-hotels");
+          }
+        },
+        theme: {
+          color: "#f59e0b",
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+    },
+    onError: (error: any) => {
+      showToast({ title: error.message || "Failed to create payment order", type: "ERROR" });
+      navigate("/my-hotels");
+    },
+  });
+
+  const verifyPaymentMutation = useMutation(apiClient.verifyListingFee);
 
   const handleSave = (hotelFormData: FormData) => {
     mutate(hotelFormData);

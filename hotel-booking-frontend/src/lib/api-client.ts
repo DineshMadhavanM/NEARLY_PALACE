@@ -29,9 +29,6 @@ interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
 // Create axios instance with consistent configuration
 const axiosInstance = axios.create({
   baseURL: getBaseURL(),
-  headers: {
-    "Content-Type": "application/json",
-  },
   withCredentials: true, // Ensure cookies are sent with requests
   timeout: 30000, // 30 second timeout
 });
@@ -50,6 +47,14 @@ axiosInstance.interceptors.request.use(async (config: CustomAxiosRequestConfig) 
       const token = await clerk.session.getToken();
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
+      } else {
+        console.warn("Axios Interceptor: Clerk session exists but failed to get token");
+      }
+    } else {
+      // Fallback: check if we have a session_id in sessionStorage (our manual fallback)
+      const storedToken = sessionStorage.getItem("session_id");
+      if (storedToken) {
+        config.headers.Authorization = `Bearer ${storedToken}`;
       }
     }
   } catch (error) {

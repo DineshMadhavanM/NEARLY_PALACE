@@ -17,6 +17,7 @@ import analyticsRoutes from "./routes/analytics";
 import reviewRoutes from "./routes/reviews";
 import adminRoutes from "./routes/admin";
 import messageRoutes from "./routes/messages";
+import paymentRoutes from "./routes/payments";
 import swaggerUi from "swagger-ui-express";
 import { specs } from "./swagger";
 import helmet from "helmet";
@@ -174,6 +175,7 @@ app.use("/api/analytics", analyticsRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/payments", paymentRoutes);
 
 // Global Error Handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

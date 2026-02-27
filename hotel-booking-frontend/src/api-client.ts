@@ -121,11 +121,7 @@ export const clearAllStorage = () => {
 };
 
 export const addMyHotel = async (hotelFormData: FormData) => {
-  const response = await axiosInstance.post("/api/my-hotels", hotelFormData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  const response = await axiosInstance.post("/api/my-hotels", hotelFormData);
   return response.data;
 };
 
@@ -143,12 +139,7 @@ export const updateMyHotelById = async (hotelFormData: FormData) => {
   const hotelId = hotelFormData.get("hotelId");
   const response = await axiosInstance.put(
     `/api/my-hotels/${hotelId}`,
-    hotelFormData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }
+    hotelFormData
   );
   return response.data;
 };
@@ -338,5 +329,20 @@ export const sendBookingNotification = async (notificationData: {
   specialRequests?: string;
 }) => {
   const response = await axiosInstance.post("/api/messages/send-booking-notification", notificationData);
+  return response.data;
+};
+
+export const createListingFeeOrder = async (hotelId: string) => {
+  const response = await axiosInstance.post("/api/payments/create-listing-fee-order", { hotelId });
+  return response.data;
+};
+
+export const verifyListingFee = async (paymentData: {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+  hotelId: string;
+}) => {
+  const response = await axiosInstance.post("/api/payments/verify-listing-fee", paymentData);
   return response.data;
 };
