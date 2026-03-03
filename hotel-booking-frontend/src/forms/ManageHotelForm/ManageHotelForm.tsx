@@ -58,7 +58,34 @@ type Props = {
 
 const ManageHotelForm = ({ onSave, isLoading, hotel, showImages = true }: Props) => {
   const formMethods = useForm<HotelFormData>();
-  const { handleSubmit, reset } = formMethods;
+  const { handleSubmit, reset, watch } = formMethods;
+
+  const watchedValues = watch();
+
+  useEffect(() => {
+    // Only load from localStorage if we're in "Add" mode (no hotel prop)
+    if (!hotel) {
+      const savedData = localStorage.getItem("addHotelFormData");
+      if (savedData) {
+        try {
+          const parsedData = JSON.parse(savedData);
+          // We don't want to reset imageFiles as they can't be serialized
+          const { imageFiles, ...rest } = parsedData;
+          reset(rest);
+        } catch (error) {
+          console.error("Failed to parse saved hotel data", error);
+        }
+      }
+    }
+  }, [hotel, reset]);
+
+  useEffect(() => {
+    // Save to localStorage whenever form values change, but only in "Add" mode
+    if (!hotel) {
+      const { imageFiles, ...rest } = watchedValues;
+      localStorage.setItem("addHotelFormData", JSON.stringify(rest));
+    }
+  }, [watchedValues, hotel]);
 
   useEffect(() => {
     if (hotel) {

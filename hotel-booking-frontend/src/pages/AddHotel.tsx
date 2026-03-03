@@ -10,6 +10,7 @@ const AddHotel = () => {
 
   const { mutate, isLoading } = useMutation(apiClient.addMyHotel, {
     onSuccess: (newHotel) => {
+      localStorage.removeItem("addHotelFormData");
       showToast({
         title: "Hotel Created",
         description: "Now, please pay the listing fee to request admin approval.",
