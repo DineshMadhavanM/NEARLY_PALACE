@@ -346,3 +346,17 @@ export const verifyListingFee = async (paymentData: {
   const response = await axiosInstance.post("/api/payments/verify-listing-fee", paymentData);
   return response.data;
 };
+
+export const createBookingOrder = async (hotelId: string, amount: number) => {
+  const response = await axiosInstance.post("/api/payments/create-booking-order", { hotelId, amount });
+  return response.data;
+};
+
+export const verifyBookingPayment = async (paymentData: {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}) => {
+  const response = await axiosInstance.post("/api/payments/verify-booking-payment", paymentData);
+  return response.data;
+};

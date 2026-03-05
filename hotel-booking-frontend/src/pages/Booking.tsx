@@ -26,6 +26,7 @@ const Booking = () => {
   const [numberOfNights, setNumberOfNights] = useState<number>(search.numberOfNights || 1);
   const [phone, setPhone] = useState<string>("");
   const [specialRequests, setSpecialRequests] = useState<string>("");
+  const [isProcessingPayment, setIsProcessingPayment] = useState<boolean>(false);
 
   useEffect(() => {
     if (search.numberOfNights) {
@@ -81,18 +82,76 @@ const Booking = () => {
     if (!hotel || !currentUser) return;
 
     const totalCost = hotel.pricePerNight * numberOfNights;
+    setIsProcessingPayment(true);
 
-    sendBookingRequestMutation.mutate({
-      hotelOwnerId: hotel.userId,
-      hotelName: hotel.name,
-      guestName: `${currentUser.firstName} ${currentUser.lastName}`,
-      guestEmail: currentUser.email,
-      checkIn: search.checkIn.toLocaleDateString(),
-      checkOut: search.checkOut.toLocaleDateString(),
-      totalCost,
-      phone,
-      specialRequests,
-    });
+    try {
+      // 1. Create Razorpay Order
+      const order = await apiClient.createBookingOrder(hotel._id, totalCost);
+
+      // 2. Open Razorpay Checkout
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        amount: order.amount,
+        currency: order.currency,
+        name: "Nearly Palace",
+        description: `Booking for ${hotel.name}`,
+        order_id: order.id,
+        handler: async (response: any) => {
+          try {
+            // 3. Verify Payment
+            await apiClient.verifyBookingPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            });
+
+            // 4. Send Notification on Success
+            sendBookingRequestMutation.mutate({
+              hotelOwnerId: hotel.userId,
+              hotelName: hotel.name,
+              guestName: `${currentUser.firstName} ${currentUser.lastName}`,
+              guestEmail: currentUser.email,
+              checkIn: search.checkIn.toLocaleDateString(),
+              checkOut: search.checkOut.toLocaleDateString(),
+              totalCost,
+              phone,
+              specialRequests,
+            });
+          } catch (error) {
+            showToast({
+              title: "Payment Verification Failed",
+              description: "There was an issue verifying your payment. Please contact support.",
+              type: "ERROR",
+            });
+          } finally {
+            setIsProcessingPayment(false);
+          }
+        },
+        prefill: {
+          name: `${currentUser.firstName} ${currentUser.lastName}`,
+          email: currentUser.email,
+          contact: phone,
+        },
+        theme: {
+          color: "#3b82f6",
+        },
+        modal: {
+          ondismiss: () => {
+            setIsProcessingPayment(false);
+          }
+        }
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+    } catch (error: any) {
+      showToast({
+        title: "Order Creation Failed",
+        description: error.message || "Could not initiate payment. Please try again.",
+        type: "ERROR",
+      });
+      setIsProcessingPayment(false);
+    }
   };
 
   if (isLoadingHotel || isLoadingUser) {
@@ -326,19 +385,19 @@ const Booking = () => {
                   {/* Submit Button */}
                   <div className="pt-4">
                     <Button
-                      disabled={sendBookingRequestMutation.isLoading}
+                      disabled={sendBookingRequestMutation.isLoading || isProcessingPayment}
                       type="submit"
                       className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-6 rounded-lg shadow-lg transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {sendBookingRequestMutation.isLoading ? (
+                      {sendBookingRequestMutation.isLoading || isProcessingPayment ? (
                         <div className="flex items-center gap-2">
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                          Sending Request...
+                          {isProcessingPayment ? "Processing Payment..." : "Sending Request..."}
                         </div>
                       ) : (
                         <div className="flex items-center gap-2">
                           <Send className="h-4 w-4" />
-                          Send Booking Request
+                          Pay & Send Booking Request
                         </div>
                       )}
                     </Button>

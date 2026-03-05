@@ -56,7 +56,47 @@ router.post(
 );
 
 router.post(
-    "/verify-listing-fee",
+    "/create-booking-order",
+    verifyToken,
+    async (req: Request, res: Response) => {
+        try {
+            const { hotelId, amount } = req.body;
+
+            if (!hotelId || !mongoose.Types.ObjectId.isValid(hotelId)) {
+                return res.status(400).json({ message: "Invalid or missing hotel ID" });
+            }
+
+            if (!amount || isNaN(amount) || amount <= 0) {
+                return res.status(400).json({ message: "Invalid or missing amount" });
+            }
+
+            const hotel = await Hotel.findById(hotelId);
+            if (!hotel) {
+                return res.status(404).json({ message: "Hotel not found" });
+            }
+
+            const options = {
+                amount: Math.round(amount * 100), // Amount in paise
+                currency: "INR",
+                receipt: `receipt_booking_${hotelId}_${Date.now()}`,
+                notes: {
+                    hotelId,
+                    userId: req.userId,
+                    type: "booking_payment"
+                },
+            };
+
+            const order = await razorpay.orders.create(options);
+            res.status(200).json(order);
+        } catch (error) {
+            console.error("Error creating booking Razorpay order:", error);
+            res.status(500).json({ message: "Internal server error" });
+        }
+    }
+);
+
+router.post(
+    "/verify-booking-payment",
     verifyToken,
     async (req: Request, res: Response) => {
         try {
@@ -64,7 +104,6 @@ router.post(
                 razorpay_order_id,
                 razorpay_payment_id,
                 razorpay_signature,
-                hotelId,
             } = req.body;
 
             const body = razorpay_order_id + "|" + razorpay_payment_id;
@@ -75,17 +114,12 @@ router.post(
                 .digest("hex");
 
             if (expectedSignature === razorpay_signature) {
-                // Payment is verified
-                await Hotel.findByIdAndUpdate(hotelId, {
-                    isListingFeePaid: true,
-                });
-
                 res.status(200).json({ message: "Payment verified successfully" });
             } else {
                 res.status(400).json({ message: "Invalid signature" });
             }
         } catch (error) {
-            console.error("Error verifying Razorpay payment:", error);
+            console.error("Error verifying booking Razorpay payment:", error);
             res.status(500).json({ message: "Internal server error" });
         }
     }
