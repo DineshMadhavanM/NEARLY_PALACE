@@ -60,13 +60,14 @@ router.post(
     verifyToken,
     async (req: Request, res: Response) => {
         try {
+            console.log("Create Booking Order Request Body:", req.body);
             const { hotelId, amount } = req.body;
 
             if (!hotelId || !mongoose.Types.ObjectId.isValid(hotelId)) {
                 return res.status(400).json({ message: "Invalid or missing hotel ID" });
             }
 
-            if (!amount || isNaN(amount) || amount <= 0) {
+            if (amount === undefined || amount === null || isNaN(Number(amount)) || Number(amount) <= 0) {
                 return res.status(400).json({ message: "Invalid or missing amount" });
             }
 
@@ -75,22 +76,41 @@ router.post(
                 return res.status(404).json({ message: "Hotel not found" });
             }
 
+            // Ensure amount is a rounded integer as Razorpay expects paise
+            const amountInPaise = Math.round(Number(amount) * 100);
+
             const options = {
-                amount: Math.round(amount * 100), // Amount in paise
+                amount: amountInPaise,
                 currency: "INR",
-                receipt: `bk_${hotelId.toString().slice(-14)}_${Date.now().toString().slice(-10)}`,
+                receipt: `bk_${hotelId.toString().slice(-10)}_${Date.now().toString().slice(-8)}`,
                 notes: {
-                    hotelId,
-                    userId: req.userId,
+                    hotelId: hotelId.toString(),
+                    userId: req.userId || "anonymous",
                     type: "booking_payment"
                 },
             };
 
+            console.log("Razorpay Order Options:", JSON.stringify(options, null, 2));
+
             const order = await razorpay.orders.create(options);
+            console.log("Razorpay Order Created Successfully:", order.id);
             res.status(200).json(order);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error creating booking Razorpay order:", error);
-            res.status(500).json({ message: "Internal server error" });
+
+            // Detailed error logging for Razorpay SDK errors
+            const errorMessage = error.message || "Unknown error";
+            const errorStack = error.stack || "";
+            const razorpayErrorData = error.response ? JSON.stringify(error.response.data) : "No extra data";
+
+            console.error(`Razorpay Error - Message: ${errorMessage}`);
+            console.error(`Razorpay Error - Data: ${razorpayErrorData}`);
+
+            res.status(500).json({
+                message: "Internal server error",
+                details: errorMessage,
+                razorpayError: error.response ? error.response.data : null
+            });
         }
     }
 );
