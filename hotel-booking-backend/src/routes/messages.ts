@@ -84,7 +84,7 @@ Estimated Total: £${totalCost}`;
             content += `\n\nSpecial Requests:\n${specialRequests}`;
         }
 
-        content += `\n\nPlease contact the guest to confirm the booking and discuss payment arrangements.`;
+        content += `\n\nPayment successful. Please contact the guest to confirm the booking.`;
 
         const newMessage = new Message({
             senderId: req.userId,

@@ -105,7 +105,22 @@ const Booking = () => {
               razorpay_signature: response.razorpay_signature,
             });
 
-            // 4. Send Notification on Success
+            // 4. Save booking to database (Updates stats)
+            await apiClient.createRazorpayBooking(hotel._id, {
+              firstName: currentUser.firstName,
+              lastName: currentUser.lastName,
+              email: currentUser.email,
+              phone,
+              adultCount: search.adultCount,
+              childCount: search.childCount,
+              checkIn: search.checkIn,
+              checkOut: search.checkOut,
+              totalCost,
+              specialRequests,
+              paymentMethod: "razorpay",
+            });
+
+            // 5. Send Notification on Success
             sendBookingRequestMutation.mutate({
               hotelOwnerId: hotel.userId,
               hotelName: hotel.name,

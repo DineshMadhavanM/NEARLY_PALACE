@@ -360,3 +360,8 @@ export const verifyBookingPayment = async (paymentData: {
   const response = await axiosInstance.post("/api/payments/verify-booking-payment", paymentData);
   return response.data;
 };
+
+export const createRazorpayBooking = async (hotelId: string, bookingData: any) => {
+  const response = await axiosInstance.post(`/api/hotels/${hotelId}/bookings/razorpay`, bookingData);
+  return response.data;
+};

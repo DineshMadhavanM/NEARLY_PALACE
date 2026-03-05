@@ -192,6 +192,49 @@ router.post(
   }
 );
 
+router.post(
+  "/:hotelId/bookings/razorpay",
+  verifyToken,
+  async (req: Request, res: Response) => {
+    try {
+      const newBooking: any = {
+        ...req.body,
+        userId: req.userId,
+        hotelId: req.params.hotelId,
+        createdAt: new Date(),
+        status: "confirmed",
+        paymentStatus: "paid",
+        paymentMethod: "razorpay",
+      };
+
+      // Create booking in separate collection
+      const booking = new Booking(newBooking);
+      await booking.save();
+
+      // Update hotel analytics
+      await Hotel.findByIdAndUpdate(req.params.hotelId, {
+        $inc: {
+          totalBookings: 1,
+          totalRevenue: newBooking.totalCost,
+        },
+      });
+
+      // Update user analytics
+      await User.findByIdAndUpdate(req.userId, {
+        $inc: {
+          totalBookings: 1,
+          totalSpent: newBooking.totalCost,
+        },
+      });
+
+      res.status(201).json(booking);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ message: "Something went wrong while creating booking" });
+    }
+  }
+);
+
 const constructSearchQuery = (queryParams: any) => {
   let constructedQuery: any = {};
 
