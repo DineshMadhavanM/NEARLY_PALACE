@@ -78,7 +78,7 @@ router.post(
             const options = {
                 amount: Math.round(amount * 100), // Amount in paise
                 currency: "INR",
-                receipt: `receipt_booking_${hotelId}_${Date.now()}`,
+                receipt: `bk_${hotelId.toString().slice(-14)}_${Date.now().toString().slice(-10)}`,
                 notes: {
                     hotelId,
                     userId: req.userId,
