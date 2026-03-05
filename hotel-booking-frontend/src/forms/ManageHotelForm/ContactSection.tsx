@@ -58,6 +58,19 @@ const ContactSection = () => {
             {...register("contact.website")}
           />
         </div>
+
+        <div className="space-y-2 col-span-1 md:col-span-3">
+          <Label className="text-base font-bold text-slate-800 flex items-center gap-2">
+            <Globe className="w-4 h-4 text-primary-600" />
+            Hotel Google Map Link
+          </Label>
+          <Input
+            type="url"
+            className="h-12 border-slate-200 focus:ring-primary-500 focus:border-primary-500 rounded-xl"
+            placeholder="https://www.google.com/maps/..."
+            {...register("contact.googleMapLink")}
+          />
+        </div>
       </div>
     </div>
   );

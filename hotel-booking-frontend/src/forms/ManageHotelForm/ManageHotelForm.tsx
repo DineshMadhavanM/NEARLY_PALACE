@@ -27,6 +27,7 @@ export type HotelFormData = {
     phone: string;
     email: string;
     website: string;
+    googleMapLink: string;
   };
   policies?: {
     checkInTime: string;
@@ -96,6 +97,7 @@ const ManageHotelForm = ({ onSave, isLoading, hotel, showImages = true }: Props)
           phone: "",
           email: "",
           website: "",
+          googleMapLink: "",
         },
         policies: hotel.policies || {
           checkInTime: "",
@@ -135,6 +137,7 @@ const ManageHotelForm = ({ onSave, isLoading, hotel, showImages = true }: Props)
       formData.append("contact.phone", formDataJson.contact.phone || "");
       formData.append("contact.email", formDataJson.contact.email || "");
       formData.append("contact.website", formDataJson.contact.website || "");
+      formData.append("contact.googleMapLink", formDataJson.contact.googleMapLink || "");
     }
 
     // Add policies

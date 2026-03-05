@@ -13,6 +13,7 @@ class Hotel {
   final int starRating;
   final List<String> imageUrls;
   final DateTime lastUpdated;
+  final Contact? contact;
 
   Hotel({
     required this.id,
@@ -29,6 +30,7 @@ class Hotel {
     required this.starRating,
     required this.imageUrls,
     required this.lastUpdated,
+    this.contact,
   });
 
   factory Hotel.fromJson(Map<String, dynamic> json) {
@@ -47,6 +49,30 @@ class Hotel {
       starRating: json['starRating'] ?? 0,
       imageUrls: List<String>.from(json['imageUrls'] ?? []),
       lastUpdated: DateTime.parse(json['lastUpdated'] ?? DateTime.now().toIso8601String()),
+      contact: json['contact'] != null ? Contact.fromJson(json['contact']) : null,
+    );
+  }
+}
+
+class Contact {
+  final String phone;
+  final String email;
+  final String website;
+  final String googleMapLink;
+
+  Contact({
+    required this.phone,
+    required this.email,
+    required this.website,
+    required this.googleMapLink,
+  });
+
+  factory Contact.fromJson(Map<String, dynamic> json) {
+    return Contact(
+      phone: json['phone'] ?? '',
+      email: json['email'] ?? '',
+      website: json['website'] ?? '',
+      googleMapLink: json['googleMapLink'] ?? '',
     );
   }
 }

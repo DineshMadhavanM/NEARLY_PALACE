@@ -23,19 +23,21 @@ const Booking = () => {
   const { hotelId } = useParams();
   const navigate = useNavigate();
 
-  const [numberOfNights, setNumberOfNights] = useState<number>(0);
+  const [numberOfNights, setNumberOfNights] = useState<number>(search.numberOfNights || 1);
   const [phone, setPhone] = useState<string>("");
   const [specialRequests, setSpecialRequests] = useState<string>("");
 
   useEffect(() => {
-    if (search.checkIn && search.checkOut) {
+    if (search.numberOfNights) {
+      setNumberOfNights(search.numberOfNights);
+    } else if (search.checkIn && search.checkOut) {
       const nights =
         Math.abs(search.checkOut.getTime() - search.checkIn.getTime()) /
         (1000 * 60 * 60 * 24);
 
       setNumberOfNights(Math.ceil(nights));
     }
-  }, [search.checkIn, search.checkOut]);
+  }, [search.checkIn, search.checkOut, search.numberOfNights]);
 
   const { data: hotel, isLoading: isLoadingHotel } = useQuery(
     "fetchHotelByID",

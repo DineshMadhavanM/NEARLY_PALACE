@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -26,6 +27,7 @@ type GuestInfoFormData = {
   checkOut: Date;
   adultCount: number;
   childCount: number;
+  numberOfNights: number;
 };
 
 const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
@@ -46,18 +48,23 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
       checkOut: search.checkOut,
       adultCount: search.adultCount,
       childCount: search.childCount,
+      numberOfNights: search.checkIn && search.checkOut
+        ? Math.ceil(Math.abs(search.checkOut.getTime() - search.checkIn.getTime()) / (1000 * 60 * 60 * 24))
+        : 1,
     },
   });
 
   const checkIn = watch("checkIn");
   const checkOut = watch("checkOut");
+  const numberOfNights = watch("numberOfNights");
 
-  // Calculate number of nights
-  let numberOfNights = 1;
-  if (checkIn && checkOut) {
-    const diff = checkOut.getTime() - checkIn.getTime();
-    numberOfNights = Math.max(1, Math.ceil(diff / (1000 * 60 * 60 * 24)));
-  }
+  useEffect(() => {
+    if (checkIn && checkOut) {
+      const diff = checkOut.getTime() - checkIn.getTime();
+      const calculatedNights = Math.max(1, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+      setValue("numberOfNights", calculatedNights);
+    }
+  }, [checkIn, checkOut, setValue]);
   const totalPrice = pricePerNight * numberOfNights;
 
   const minDate = new Date();
@@ -70,7 +77,8 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
       data.checkIn,
       data.checkOut,
       data.adultCount,
-      data.childCount
+      data.childCount,
+      data.numberOfNights
     );
     navigate("/sign-in", { state: { from: location } });
   };
@@ -224,10 +232,27 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
             <div className="space-y-3">
               <Label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                 <Users className="h-4 w-4" />
-                Guest Information
+                Stay & Guest Information
               </Label>
 
               <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2 col-span-2">
+                  <Label className="flex items-center gap-2 text-xs text-gray-600">
+                    <Calendar className="h-3 w-3" />
+                    Number of Nights
+                  </Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    className="text-center font-semibold"
+                    {...register("numberOfNights", {
+                      required: "This field is required",
+                      min: { value: 1, message: "Must be at least 1 night" },
+                      valueAsNumber: true,
+                    })}
+                  />
+                </div>
+
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2 text-xs text-gray-600">
                     <User className="h-3 w-3" />

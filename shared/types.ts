@@ -69,6 +69,7 @@ export interface Contact {
   phone: string;
   email: string;
   website: string;
+  googleMapLink?: string;
 }
 
 export interface Policies {

@@ -35,6 +35,7 @@ const hotelSchema = new mongoose.Schema<HotelType>(
       phone: String,
       email: String,
       website: String,
+      googleMapLink: String,
     },
     policies: {
       checkInTime: String,
