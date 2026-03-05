@@ -81,12 +81,13 @@ const Booking = () => {
 
     if (!hotel || !currentUser) return;
 
-    const totalCost = hotel.pricePerNight * numberOfNights;
+    const totalCost = hotel.pricePerNight * numberOfNights * (search.roomCount || 1);
+    const advancePaid = totalCost / 2;
     setIsProcessingPayment(true);
 
     try {
-      // 1. Create Razorpay Order
-      const order = await apiClient.createBookingOrder(hotel._id, totalCost);
+      // 1. Create Razorpay Order (Only for advance amount)
+      const order = await apiClient.createBookingOrder(hotel._id, advancePaid);
 
       // 2. Open Razorpay Checkout
       const options = {
@@ -94,7 +95,7 @@ const Booking = () => {
         amount: order.amount,
         currency: order.currency,
         name: "Nearly Palace",
-        description: `Booking for ${hotel.name}`,
+        description: `Booking for ${hotel.name} (50% Advance)`,
         order_id: order.id,
         handler: async (response: any) => {
           try {
@@ -115,7 +116,9 @@ const Booking = () => {
               childCount: search.childCount,
               checkIn: search.checkIn,
               checkOut: search.checkOut,
+              roomCount: search.roomCount || 1,
               totalCost,
+              advancePaid,
               specialRequests,
               paymentMethod: "razorpay",
             });
@@ -128,7 +131,7 @@ const Booking = () => {
               guestEmail: currentUser.email,
               checkIn: search.checkIn.toLocaleDateString(),
               checkOut: search.checkOut.toLocaleDateString(),
-              totalCost,
+              totalCost, // For notification, maybe show full and advance
               phone,
               specialRequests,
             });
@@ -197,7 +200,6 @@ const Booking = () => {
     );
   }
 
-  const totalCost = hotel.pricePerNight * numberOfNights;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-8">
@@ -233,6 +235,7 @@ const Booking = () => {
                   adultCount={search.adultCount}
                   childCount={search.childCount}
                   numberOfNights={numberOfNights}
+                  roomCount={search.roomCount || 1}
                   hotel={hotel}
                 />
               </CardContent>
@@ -284,13 +287,19 @@ const Booking = () => {
               <CardContent className="pt-6">
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-100">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-gray-700 font-medium">Estimated Total</span>
-                    <span className="text-2xl font-bold text-blue-600">
-                      £{totalCost.toFixed(2)}
+                    <span className="text-gray-700 font-medium">Full Total</span>
+                    <span className="text-lg font-bold text-gray-500 line-through">
+                      £{(hotel.pricePerNight * numberOfNights * (search.roomCount || 1)).toFixed(2)}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500">
-                    {numberOfNights} night{numberOfNights > 1 ? 's' : ''} × £{hotel.pricePerNight}
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-gray-700 font-bold">Advance To Pay (50%)</span>
+                    <span className="text-2xl font-bold text-blue-600">
+                      £{(hotel.pricePerNight * numberOfNights * (search.roomCount || 1) / 2).toFixed(2)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-blue-600 font-semibold mt-2">
+                    Pay 50% now to secure your booking. Remaining balance at hotel.
                   </p>
                 </div>
               </CardContent>

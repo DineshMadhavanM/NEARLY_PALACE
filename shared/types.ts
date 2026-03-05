@@ -41,6 +41,8 @@ export type HotelType = {
   pricePerNight: number;
   starRating: number;
   imageUrls: string[];
+  totalRooms: number;
+  availableRooms: number;
   lastUpdated: Date;
   location?: Location;
   contact?: Contact;
@@ -104,7 +106,9 @@ export type BookingType = {
   childCount: number;
   checkIn: Date;
   checkOut: Date;
+  roomCount: number;
   totalCost: number;
+  advancePaid: number;
   status: "pending" | "confirmed" | "cancelled" | "completed" | "refunded";
   paymentStatus: "pending" | "paid" | "failed" | "refunded";
   paymentMethod?: string;
@@ -181,6 +185,8 @@ export interface HotelFormData {
   facilities: string[];
   pricePerNight: number;
   starRating: number;
+  totalRooms: number;
+  availableRooms: number;
   imageFiles: any; // File[] or FileList depending on environment
 }
 
@@ -190,9 +196,10 @@ export interface BookingData {
   email: string;
   adultCount: number;
   childCount: number;
-  checkIn: Date;
   checkOut: Date;
+  roomCount: number;
   totalCost: number;
+  advancePaid: number;
 }
 
 export interface RevenueData {

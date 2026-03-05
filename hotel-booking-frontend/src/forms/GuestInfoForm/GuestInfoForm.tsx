@@ -15,7 +15,7 @@ import {
   CardTitle,
 } from "../../components/ui/card";
 import { Badge } from "../../components/ui/badge";
-import { Calendar, Users, User, Baby, CreditCard } from "lucide-react";
+import { Calendar, Users, User, Baby, CreditCard, Building } from "lucide-react";
 
 type Props = {
   hotelId: string;
@@ -28,6 +28,7 @@ type GuestInfoFormData = {
   adultCount: number;
   childCount: number;
   numberOfNights: number;
+  roomCount: number;
 };
 
 const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
@@ -51,12 +52,14 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
       numberOfNights: search.checkIn && search.checkOut
         ? Math.ceil(Math.abs(search.checkOut.getTime() - search.checkIn.getTime()) / (1000 * 60 * 60 * 24))
         : 1,
+      roomCount: search.roomCount || 1,
     },
   });
 
   const checkIn = watch("checkIn");
   const checkOut = watch("checkOut");
   const numberOfNights = watch("numberOfNights");
+  const roomCount = watch("roomCount");
 
   useEffect(() => {
     if (checkIn && checkOut) {
@@ -65,7 +68,8 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
       setValue("numberOfNights", calculatedNights);
     }
   }, [checkIn, checkOut, setValue]);
-  const totalPrice = pricePerNight * numberOfNights;
+  const totalPrice = pricePerNight * numberOfNights * roomCount;
+  const advancePrice = totalPrice / 2;
 
   const minDate = new Date();
   const maxDate = new Date();
@@ -169,14 +173,18 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
             <div className="flex items-center gap-2">
               <span className="text-gray-600">
                 £{pricePerNight} × {numberOfNights} night
-                {numberOfNights > 1 ? "s" : ""}
+                {numberOfNights > 1 ? "s" : ""} × {roomCount} room
+                {roomCount > 1 ? "s" : ""}
               </span>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-xl font-bold text-gray-500 line-through">
                 £{totalPrice}
               </div>
-              <div className="text-xs text-gray-500">Total Price</div>
+              <div className="text-2xl font-bold text-blue-600">
+                £{advancePrice}
+              </div>
+              <div className="text-xs text-blue-500 font-semibold">Advance Amount (50%)</div>
             </div>
           </div>
 
@@ -248,6 +256,23 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
                     {...register("numberOfNights", {
                       required: "This field is required",
                       min: { value: 1, message: "Must be at least 1 night" },
+                      valueAsNumber: true,
+                    })}
+                  />
+                </div>
+
+                <div className="space-y-2 col-span-2">
+                  <Label className="flex items-center gap-2 text-xs text-gray-600">
+                    <Building className="h-3 w-3" />
+                    Number of Rooms
+                  </Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    className="text-center font-semibold"
+                    {...register("roomCount", {
+                      required: "This field is required",
+                      min: { value: 1, message: "Must be at least 1 room" },
                       valueAsNumber: true,
                     })}
                   />

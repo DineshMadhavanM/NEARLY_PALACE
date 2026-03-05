@@ -205,6 +205,8 @@ router.post(
         status: "confirmed",
         paymentStatus: "paid",
         paymentMethod: "razorpay",
+        roomCount: req.body.roomCount || 1,
+        advancePaid: req.body.advancePaid,
       };
 
       // Create booking in separate collection

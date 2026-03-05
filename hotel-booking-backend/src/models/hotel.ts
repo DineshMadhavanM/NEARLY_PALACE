@@ -15,6 +15,8 @@ const hotelSchema = new mongoose.Schema<HotelType>(
     pricePerNight: { type: Number, required: true, index: true },
     starRating: { type: Number, required: true, min: 1, max: 5, index: true },
     imageUrls: [{ type: String, required: true }],
+    totalRooms: { type: Number, required: true, default: 0 },
+    availableRooms: { type: Number, required: true, default: 0 },
     lastUpdated: { type: Date, required: true },
     // Remove embedded bookings - we'll use separate collection
     // bookings: [bookingSchema],

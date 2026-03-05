@@ -6,6 +6,7 @@ type Props = {
   adultCount: number;
   childCount: number;
   numberOfNights: number;
+  roomCount: number;
   hotel: HotelType;
 };
 
@@ -15,6 +16,7 @@ const BookingDetailsSummary = ({
   adultCount,
   childCount,
   numberOfNights,
+  roomCount,
   hotel,
 }: Props) => {
   return (
@@ -35,8 +37,10 @@ const BookingDetailsSummary = ({
         </div>
       </div>
       <div className="border-t border-b py-2">
-        Total length of stay:
-        <div className="font-bold">{numberOfNights} nights</div>
+        Stay Details:
+        <div className="font-bold">
+          {numberOfNights} night{numberOfNights > 1 ? "s" : ""} & {roomCount} room{roomCount > 1 ? "s" : ""}
+        </div>
       </div>
 
       <div>

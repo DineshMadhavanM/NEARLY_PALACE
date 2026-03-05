@@ -137,6 +137,43 @@ const DetailsSection = () => {
             </Badge>
           )}
         </div>
+
+        {/* Room Management */}
+        <div className="space-y-2">
+          <Label className="text-base font-bold text-slate-800 flex items-center gap-2">
+            <Building className="w-4 h-4 text-primary-600" />
+            Total No of Rooms in Hotel
+          </Label>
+          <Input
+            type="number"
+            min={1}
+            className="h-12 border-slate-200 focus:ring-primary-500 focus:border-primary-500 rounded-xl"
+            {...register("totalRooms", { required: "Total rooms is required" })}
+          />
+          {errors.totalRooms && (
+            <Badge variant="outline" className="text-red-500 border-red-200 bg-red-50">
+              {errors.totalRooms.message}
+            </Badge>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-base font-bold text-slate-800 flex items-center gap-2">
+            <Building className="w-4 h-4 text-primary-600" />
+            No of Available Rooms
+          </Label>
+          <Input
+            type="number"
+            min={0}
+            className="h-12 border-slate-200 focus:ring-primary-500 focus:border-primary-500 rounded-xl"
+            {...register("availableRooms", { required: "Available rooms is required" })}
+          />
+          {errors.availableRooms && (
+            <Badge variant="outline" className="text-red-500 border-red-200 bg-red-50">
+              {errors.availableRooms.message}
+            </Badge>
+          )}
+        </div>
       </div>
     </div>
   );

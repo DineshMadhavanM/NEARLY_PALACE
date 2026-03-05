@@ -22,6 +22,8 @@ export type HotelFormData = {
   imageUrls: string[];
   adultCount: number;
   childCount: number;
+  totalRooms: number;
+  availableRooms: number;
   // New fields
   contact?: {
     phone: string;
@@ -127,6 +129,8 @@ const ManageHotelForm = ({ onSave, isLoading, hotel, showImages = true }: Props)
     formData.append("starRating", formDataJson.starRating.toString());
     formData.append("adultCount", formDataJson.adultCount.toString());
     formData.append("childCount", formDataJson.childCount.toString());
+    formData.append("totalRooms", formDataJson.totalRooms.toString());
+    formData.append("availableRooms", formDataJson.availableRooms.toString());
 
     formDataJson.facilities.forEach((facility) => {
       formData.append("facilities", facility);

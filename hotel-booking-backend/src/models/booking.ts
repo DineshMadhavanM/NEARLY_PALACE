@@ -35,7 +35,9 @@ const bookingSchema = new mongoose.Schema(
     childCount: { type: Number, required: true },
     checkIn: { type: Date, required: true, index: true },
     checkOut: { type: Date, required: true },
+    roomCount: { type: Number, required: true, default: 1 },
     totalCost: { type: Number, required: true },
+    advancePaid: { type: Number, required: true },
     status: {
       type: String,
       enum: ["pending", "confirmed", "cancelled", "completed", "refunded"],

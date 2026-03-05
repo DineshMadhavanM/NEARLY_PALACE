@@ -84,7 +84,7 @@ Estimated Total: £${totalCost}`;
             content += `\n\nSpecial Requests:\n${specialRequests}`;
         }
 
-        content += `\n\nPayment successful. Please contact the guest to confirm the booking.`;
+        content += `\n\n50% Advance Payment Successful. Remaining 50% balance to be paid directly at the hotel. Please contact the guest to confirm the booking.`;
 
         const newMessage = new Message({
             senderId: req.userId,
